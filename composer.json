@@ -1,5 +1,5 @@
 {
-    "name": "jms/cg",
+    "name": "demoniacdeath/cg",
     "description": "Toolset for generating PHP code",
     "keywords": ["code generation"],
     "type": "library",
@@ -8,6 +8,13 @@
         {
             "name": "Johannes M. Schmitt",
             "email": "schmittjoh@gmail.com"
+        },
+        {
+            "name": "4n70w4"
+        },
+        {
+            "name": "Michael Skvortsov",
+            "email": "demoniac.death@gmail.com"
         }
     ],
     "require": {
