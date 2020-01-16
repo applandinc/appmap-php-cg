@@ -56,10 +56,13 @@ class PhpMethod extends AbstractPhpMember
             ->setName($ref->name)
         ;
 
-        if (method_exists($ref, 'getReturnType')) {
-            if ($type = $ref->getReturnType()) {
-                $method->setReturnType((string)$type, $type->allowsNull());
+        if (method_exists($ref, 'getReturnType') && $type = $ref->getReturnType()) {
+            if ($type instanceof \ReflectionNamedType) {
+                $typeName = $type->getName();
+            } else {
+                $typeName = (string)$type;
             }
+            $method->setReturnType($typeName, $type->allowsNull());
         }
 
         if ($docComment = $ref->getDocComment()) {

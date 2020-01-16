@@ -18,6 +18,8 @@
 
 namespace CG\Generator;
 
+use ReflectionNamedType;
+
 /**
  * Represents a PHP parameter.
  *
@@ -54,16 +56,19 @@ class PhpParameter extends AbstractBuilder
 
         if (method_exists($ref, 'getType')) {
             if ($type = $ref->getType()) {
-                $parameter->setType((string)$type);
+                if ($type instanceof ReflectionNamedType) {
+                    $typeName = $type->getName();
+                } else {
+                    $typeName = (string)$type;
+                }
+                $parameter->setType($typeName);
             }
-        } else {
-            if ($ref->isArray()) {
-                $parameter->setType('array');
-            } elseif ($class = $ref->getClass()) {
-                $parameter->setType($class->name);
-            } elseif (method_exists($ref, 'isCallable') && $ref->isCallable()) {
-                $parameter->setType('callable');
-            }
+        } else if ($ref->isArray()) {
+            $parameter->setType('array');
+        } elseif ($class = $ref->getClass()) {
+            $parameter->setType($class->name);
+        } elseif (method_exists($ref, 'isCallable') && $ref->isCallable()) {
+            $parameter->setType('callable');
         }
 
         return $parameter;

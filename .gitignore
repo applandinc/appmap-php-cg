@@ -4,3 +4,4 @@ vendor/
 .phpunit
 .phpunit.result.cache
 /phpunit.xml
+/composer.phar
