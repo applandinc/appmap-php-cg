@@ -18,6 +18,8 @@
 
 namespace CG\Generator;
 
+use ReflectionMethod;
+
 /**
  * Some Generator utils.
  *
@@ -25,12 +27,10 @@ namespace CG\Generator;
  */
 abstract class GeneratorUtils
 {
-    final private function __construct() {}
-
-    public static function callMethod(\ReflectionMethod $method, array $params = null)
+    public static function callMethod(ReflectionMethod $method, array $params = null): string
     {
         if (null === $params) {
-            $params = array_map(function($p) { return '$'.$p->name; }, $method->getParameters());
+            $params = array_map(static function($p) { return '$'.$p->name; }, $method->getParameters());
         }
 
         return '\\'.$method->getDeclaringClass()->name.'::'.$method->name.'('.implode(', ', $params).')';

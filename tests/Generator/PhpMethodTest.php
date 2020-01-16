@@ -87,6 +87,10 @@ class PhpMethodTest extends TestCase
 
 class FooBar
 {
+    /**
+     * @return bool|null
+     * @noinspection PhpUnused
+     */
     public function foo(): ?bool
     {
         return null;

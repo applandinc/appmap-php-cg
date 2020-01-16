@@ -26,8 +26,10 @@ namespace CG\Generator;
 class DefaultVisitor implements DefaultVisitorInterface
 {
     protected $writer;
-    private $isInterface;
-    private bool $useQuestionMark;
+    /**
+     * @var bool
+     */
+    private $useQuestionMark;
 
     public function __construct(bool $useQuestionMark = null)
     {
@@ -35,16 +37,16 @@ class DefaultVisitor implements DefaultVisitorInterface
         if ($useQuestionMark !== null) {
             $this->useQuestionMark = $useQuestionMark;
         } else {
-            $this->useQuestionMark = version_compare(phpversion(), '7.1', '>');
+            $this->useQuestionMark = PHP_VERSION_ID > 70100;
         }
     }
 
-    public function reset()
+    public function reset(): void
     {
         $this->writer->reset();
     }
 
-    public function startVisitingClass(PhpClass $class)
+    public function startVisitingClass(PhpClass $class): void
     {
         if ($namespace = $class->getNamespace()) {
             $this->writer->write('namespace '.$namespace.';'."\n\n");
@@ -71,6 +73,7 @@ class DefaultVisitor implements DefaultVisitorInterface
                     $this->writer->write(' as '.$alias);
                 }
 
+                /** @noinspection DisconnectedForeachInstructionInspection */
                 $this->writer->write(";\n");
             }
 
@@ -90,21 +93,18 @@ class DefaultVisitor implements DefaultVisitorInterface
         }
 
         // TODO: Interfaces should be modeled as separate classes.
-        $this->isInterface = $class->getAttributeOrElse('interface', false);
-        $this->writer->write($this->isInterface ? 'interface ' : 'class ');
+        $this->writer->write('class ');
         $this->writer->write($class->getShortName());
 
-        if ( ! $this->isInterface) {
-            if ($parentClassName = $class->getParentClassName()) {
-                $this->writer->write(' extends '.('\\' === $parentClassName[0] ? $parentClassName : '\\'.$parentClassName));
-            }
+        if ($parentClassName = $class->getParentClassName()) {
+            $this->writer->write(' extends '.('\\' === $parentClassName[0] ? $parentClassName : '\\'.$parentClassName));
         }
 
         $interfaceNames = $class->getInterfaceNames();
         if (!empty($interfaceNames)) {
             $interfaceNames = array_unique($interfaceNames);
 
-            $interfaceNames = array_map(function($name) {
+            $interfaceNames = array_map(static function($name) {
                 if ('\\' === $name[0]) {
                     return $name;
                 }
@@ -112,7 +112,7 @@ class DefaultVisitor implements DefaultVisitorInterface
                 return '\\'.$name;
             }, $interfaceNames);
 
-            $this->writer->write($this->isInterface ? ' extends ' : ' implements ');
+            $this->writer->write(' implements ');
             $this->writer->write(implode(', ', $interfaceNames));
         }
 
@@ -122,25 +122,25 @@ class DefaultVisitor implements DefaultVisitorInterface
         ;
     }
 
-    public function startVisitingClassConstants()
+    public function startVisitingClassConstants(): void
     {
     }
 
-    public function visitClassConstant(PhpConstant $constant)
+    public function visitClassConstant(PhpConstant $constant): void
     {
         $this->writer->writeln('const '.$constant->getName().' = '.var_export($constant->getValue(), true).';');
     }
 
-    public function endVisitingClassConstants()
+    public function endVisitingClassConstants(): void
     {
         $this->writer->write("\n");
     }
 
-    public function startVisitingProperties()
+    public function startVisitingProperties(): void
     {
     }
 
-    public function visitProperty(PhpProperty $property)
+    public function visitProperty(PhpProperty $property): void
     {
         if ($docblock = $property->getDocblock()) {
             $this->writer->writeln($docblock)->rtrim();
@@ -155,16 +155,16 @@ class DefaultVisitor implements DefaultVisitorInterface
         $this->writer->writeln(';');
     }
 
-    public function endVisitingProperties()
+    public function endVisitingProperties(): void
     {
         $this->writer->write("\n");
     }
 
-    public function startVisitingMethods()
+    public function startVisitingMethods(): void
     {
     }
 
-    public function visitMethod(PhpMethod $method)
+    public function visitMethod(PhpMethod $method): void
     {
         if ($docblock = $method->getDocblock()) {
             $this->writer->writeln($docblock)->rtrim();
@@ -190,7 +190,7 @@ class DefaultVisitor implements DefaultVisitorInterface
 
         $this->writeParameters($method->getParameters());
 
-        $this->writer->write(")");
+        $this->writer->write(')');
 
         if ($method->hasReturnType()) {
             $type = $method->getReturnType();
@@ -198,13 +198,13 @@ class DefaultVisitor implements DefaultVisitorInterface
             if ($this->useQuestionMark && $method->isNullAllowedForReturnType()) {
                 $this->writer->write('?');
             }
-            if (!$method->hasBuiltInReturnType() && '\\' !== $type[0]) {
+            if ('\\' !== $type[0] && !$method->hasBuiltInReturnType()) {
                 $this->writer->write('\\');
             }
             $this->writer->write($type);
         }
 
-        if ($method->isAbstract() || $this->isInterface) {
+        if ($method->isAbstract()) {
             $this->writer->write(";\n\n");
 
             return;
@@ -220,11 +220,11 @@ class DefaultVisitor implements DefaultVisitorInterface
         ;
     }
 
-    public function endVisitingMethods()
+    public function endVisitingMethods(): void
     {
     }
 
-    public function endVisitingClass(PhpClass $class)
+    public function endVisitingClass(PhpClass $class): void
     {
         $this->writer
             ->outdent()
@@ -233,7 +233,7 @@ class DefaultVisitor implements DefaultVisitorInterface
         ;
     }
 
-    public function visitFunction(PhpFunction $function)
+    public function visitFunction(PhpFunction $function): void
     {
         if ($namespace = $function->getNamespace()) {
             $this->writer->write("namespace $namespace;\n\n");
@@ -250,7 +250,7 @@ class DefaultVisitor implements DefaultVisitorInterface
         if ($function->hasReturnType()) {
             $type = $function->getReturnType();
             $this->writer->write(': ');
-            if (!$function->hasBuiltinReturnType() && '\\' !== $type[0]) {
+            if ('\\' !== $type[0] && !$function->hasBuiltinReturnType()) {
                 $this->writer->write('\\');
             }
 
@@ -267,12 +267,12 @@ class DefaultVisitor implements DefaultVisitorInterface
         ;
     }
 
-    public function getContent()
+    public function getContent(): string
     {
         return $this->writer->getContent();
     }
 
-    private function writeParameters(array $parameters)
+    private function writeParameters(array $parameters): void
     {
         $first = true;
         foreach ($parameters as $parameter) {
@@ -283,7 +283,7 @@ class DefaultVisitor implements DefaultVisitorInterface
 
             if ($parameter->hasType()) {
                 $type = $parameter->getType();
-                if (!$parameter->hasBuiltinType() && '\\' !== $type[0]) {
+                if ('\\' !== $type[0] && !$parameter->hasBuiltinType()) {
                     $this->writer->write('\\');
                 }
                 $this->writer->write($type . ' ');

@@ -18,14 +18,16 @@
 
 namespace CG\Generator;
 
+use ReflectionException;
 use ReflectionNamedType;
+use ReflectionParameter;
 
 /**
  * Represents a PHP parameter.
  *
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
-class PhpParameter extends AbstractBuilder
+class PhpParameter
 {
     private $name;
     private $defaultValue;
@@ -36,13 +38,19 @@ class PhpParameter extends AbstractBuilder
 
     /**
      * @param string|null $name
+     * @return PhpParameter
      */
-    public static function create($name = null)
+    public static function create($name = null): PhpParameter
     {
         return new static($name);
     }
 
-    public static function fromReflection(\ReflectionParameter $ref)
+    /**
+     * @param ReflectionParameter $ref
+     * @return PhpParameter
+     * @throws ReflectionException
+     */
+    public static function fromReflection(ReflectionParameter $ref): PhpParameter
     {
         $parameter = new static();
         $parameter
@@ -81,15 +89,16 @@ class PhpParameter extends AbstractBuilder
 
     /**
      * @param string $name
+     * @return PhpParameter
      */
-    public function setName($name)
+    public function setName($name): PhpParameter
     {
         $this->name = $name;
 
         return $this;
     }
 
-    public function setDefaultValue($value)
+    public function setDefaultValue($value): PhpParameter
     {
         $this->defaultValue = $value;
         $this->hasDefaultValue = true;
@@ -97,7 +106,7 @@ class PhpParameter extends AbstractBuilder
         return $this;
     }
 
-    public function unsetDefaultValue()
+    public function unsetDefaultValue(): PhpParameter
     {
         $this->defaultValue = null;
         $this->hasDefaultValue = false;
@@ -107,8 +116,9 @@ class PhpParameter extends AbstractBuilder
 
     /**
      * @param boolean $bool
+     * @return PhpParameter
      */
-    public function setPassedByReference($bool)
+    public function setPassedByReference($bool): PhpParameter
     {
         $this->passedByReference = (Boolean) $bool;
 
@@ -117,8 +127,9 @@ class PhpParameter extends AbstractBuilder
 
     /**
      * @param string $type
+     * @return PhpParameter
      */
-    public function setType($type)
+    public function setType($type): PhpParameter
     {
         $this->type = $type;
         $this->typeBuiltin = BuiltinType::isBuiltIn($type);
@@ -136,12 +147,12 @@ class PhpParameter extends AbstractBuilder
         return $this->defaultValue;
     }
 
-    public function hasDefaultValue()
+    public function hasDefaultValue(): bool
     {
         return $this->hasDefaultValue;
     }
 
-    public function isPassedByReference()
+    public function isPassedByReference(): bool
     {
         return $this->passedByReference;
     }
@@ -151,7 +162,7 @@ class PhpParameter extends AbstractBuilder
         return $this->type;
     }
 
-    public function hasType()
+    public function hasType(): bool
     {
         return null !== $this->type;
     }

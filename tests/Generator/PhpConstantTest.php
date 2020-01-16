@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 class PhpConstantTest extends TestCase
 {
 
-    public function testSetGet()
+    public function testSetGet(): void
     {
         $constant = PhpConstant::create();
         $this->assertNull($constant->getName());

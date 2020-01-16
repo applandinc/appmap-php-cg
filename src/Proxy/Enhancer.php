@@ -40,16 +40,22 @@ use RuntimeException;
  */
 class Enhancer extends AbstractClassGenerator
 {
-    private PhpClass $generatedClass;
-    private ReflectionClass $class;
+    /**
+     * @var PhpClass
+     */
+    private $generatedClass;
+    /**
+     * @var ReflectionClass
+     */
+    private $class;
     /**
      * @var array|string[]
      */
-    private array $interfaces;
+    private $interfaces;
     /**
      * @var array|InterceptionGenerator[]
      */
-    private array $generators;
+    private $generators;
 
     public function __construct(ReflectionClass $class, array $interfaces = [], array $generators = [])
     {
@@ -88,10 +94,8 @@ class Enhancer extends AbstractClassGenerator
      */
     public function writeClass($filename): void
     {
-        if (!is_dir($dir = dirname($filename))) {
-            if (false === @mkdir($dir, 0777, true)) {
-                throw new RuntimeException(sprintf('Could not create directory "%s".', $dir));
-            }
+        if (!is_dir($dir = dirname($filename)) && !mkdir($dir, 0777, true) && !is_dir($dir)) {
+            throw new RuntimeException(sprintf('Could not create directory "%s".', $dir));
         }
 
         if (!is_writable($dir)) {
@@ -133,7 +137,7 @@ class Enhancer extends AbstractClassGenerator
         $this->generatedClass->setName($proxyClassName);
 
         if (!empty($this->interfaces)) {
-            $this->generatedClass->setInterfaceNames(array_map(function ($v) {
+            $this->generatedClass->setInterfaceNames(array_map(static function ($v) {
                 return '\\' . $v;
             }, $this->interfaces));
 
@@ -156,17 +160,11 @@ class Enhancer extends AbstractClassGenerator
 
     /**
      * Adds stub methods for the interfaces that have been implemented.
-     * @throws ReflectionException
      */
     protected function getInterfaceMethods(): array
     {
-        $methods = [];
-
-        foreach ($this->interfaces as $interface) {
-            $ref = new ReflectionClass($interface);
-            $methods = array_merge($methods, $ref->getMethods());
-        }
-
-        return $methods;
+        return array_merge(...array_map(static function(string $interface) {
+            return (new ReflectionClass($interface))->getMethods();
+        }, $this->interfaces));
     }
 }

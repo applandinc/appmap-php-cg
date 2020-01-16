@@ -24,8 +24,12 @@ namespace CG\Generator;
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
 use CG\Core\ReflectionUtils;
+use InvalidArgumentException;
+use ReflectionException;
+use ReflectionFunction;
+use ReflectionParameter;
 
-class PhpFunction extends AbstractBuilder
+class PhpFunction
 {
     private $name;
     private $namespace;
@@ -36,7 +40,12 @@ class PhpFunction extends AbstractBuilder
     private $returnType;
     private $returnTypeBuiltin = false;
 
-    public static function fromReflection(\ReflectionFunction $ref)
+    /**
+     * @param ReflectionFunction $ref
+     * @return PhpFunction
+     * @throws ReflectionException
+     */
+    public static function fromReflection(ReflectionFunction $ref): PhpFunction
     {
         $function = new static();
 
@@ -47,16 +56,14 @@ class PhpFunction extends AbstractBuilder
             $function->setName($ref->name);
         }
 
-        if (method_exists($ref, 'getReturnType')) {
-            if ($type = $ref->getReturnType()) {
-                $function->setReturnType((string)$type);
-            }
+        if (method_exists($ref, 'getReturnType') && $type = $ref->getReturnType()) {
+            $function->setReturnType((string)$type);
         }
         $function->referenceReturned = $ref->returnsReference();
         $function->docblock = ReflectionUtils::getUnindentedDocComment($ref->getDocComment());
 
         foreach ($ref->getParameters() as $refParam) {
-            assert($refParam instanceof \ReflectionParameter);
+            assert($refParam instanceof ReflectionParameter);
 
             $param = PhpParameter::fromReflection($refParam);
             $function->addParameter($param);
@@ -65,7 +72,7 @@ class PhpFunction extends AbstractBuilder
         return $function;
     }
 
-    public static function create($name = null)
+    public static function create($name = null): PhpFunction
     {
         return new static($name);
     }
@@ -77,8 +84,9 @@ class PhpFunction extends AbstractBuilder
 
     /**
      * @param string $name
+     * @return PhpFunction
      */
-    public function setName($name)
+    public function setName($name): PhpFunction
     {
         $this->name = $name;
 
@@ -87,8 +95,9 @@ class PhpFunction extends AbstractBuilder
 
     /**
      * @param string $namespace
+     * @return PhpFunction
      */
-    public function setNamespace($namespace)
+    public function setNamespace($namespace): PhpFunction
     {
         $this->namespace = $namespace;
 
@@ -100,8 +109,9 @@ class PhpFunction extends AbstractBuilder
      * including the namespace.
      *
      * @param string $name
+     * @return PhpFunction
      */
-    public function setQualifiedName($name)
+    public function setQualifiedName($name): PhpFunction
     {
         if (false !== $pos = strrpos($name, '\\')) {
             $this->namespace = substr($name, 0, $pos);
@@ -116,7 +126,7 @@ class PhpFunction extends AbstractBuilder
         return $this;
     }
 
-    public function setParameters(array $parameters)
+    public function setParameters(array $parameters): PhpFunction
     {
         $this->parameters = $parameters;
 
@@ -125,15 +135,16 @@ class PhpFunction extends AbstractBuilder
 
     /**
      * @param boolean $bool
+     * @return PhpFunction
      */
-    public function setReferenceReturned($bool)
+    public function setReferenceReturned($bool): PhpFunction
     {
         $this->referenceReturned = (Boolean) $bool;
 
         return $this;
     }
 
-    public function setReturnType($type)
+    public function setReturnType($type): PhpFunction
     {
         $this->returnType = $type;
         $this->returnTypeBuiltin = BuiltinType::isBuiltIn($type);
@@ -142,11 +153,13 @@ class PhpFunction extends AbstractBuilder
 
     /**
      * @param integer $position
+     * @param PhpParameter $parameter
+     * @return PhpFunction
      */
-    public function replaceParameter($position, PhpParameter $parameter)
+    public function replaceParameter($position, PhpParameter $parameter): PhpFunction
     {
         if ($position < 0 || $position > count($this->parameters)) {
-            throw new \InvalidArgumentException(sprintf('$position must be in the range [0, %d].', count($this->parameters)));
+            throw new InvalidArgumentException(sprintf('$position must be in the range [0, %d].', count($this->parameters)));
         }
 
         $this->parameters[$position] = $parameter;
@@ -154,7 +167,7 @@ class PhpFunction extends AbstractBuilder
         return $this;
     }
 
-    public function addParameter(PhpParameter $parameter)
+    public function addParameter(PhpParameter $parameter): PhpFunction
     {
         $this->parameters[] = $parameter;
 
@@ -162,38 +175,13 @@ class PhpFunction extends AbstractBuilder
     }
 
     /**
-     * @param string|integer $nameOrIndex
-     *
-     * @return PhpParameter
-     */
-    public function getParameter($nameOrIndex)
-    {
-        if (is_int($nameOrIndex)) {
-            if ( ! isset($this->parameters[$nameOrIndex])) {
-                throw new \InvalidArgumentException(sprintf('There is no parameter at position %d (0-based).', $nameOrIndex));
-            }
-
-            return $this->parameters[$nameOrIndex];
-        }
-
-        foreach ($this->parameters as $param) {
-            assert($param instanceof PhpParameter);
-
-            if ($param->getName() === $nameOrIndex) {
-                return $param;
-            }
-        }
-
-        throw new \InvalidArgumentException(sprintf('There is no parameter named "%s".', $nameOrIndex));
-    }
-
-    /**
      * @param integer $position
+     * @return PhpFunction
      */
-    public function removeParameter($position)
+    public function removeParameter($position): PhpFunction
     {
         if (!isset($this->parameters[$position])) {
-            throw new \InvalidArgumentException(sprintf('There is not parameter at position %d.', $position));
+            throw new InvalidArgumentException(sprintf('There is not parameter at position %d.', $position));
         }
 
         unset($this->parameters[$position]);
@@ -204,8 +192,9 @@ class PhpFunction extends AbstractBuilder
 
     /**
      * @param string $body
+     * @return PhpFunction
      */
-    public function setBody($body)
+    public function setBody($body): PhpFunction
     {
         $this->body = $body;
 
@@ -214,8 +203,9 @@ class PhpFunction extends AbstractBuilder
 
     /**
      * @param string $docBlock
+     * @return PhpFunction
      */
-    public function setDocblock($docBlock)
+    public function setDocblock($docBlock): PhpFunction
     {
         $this->docblock = $docBlock;
 
@@ -232,7 +222,7 @@ class PhpFunction extends AbstractBuilder
         return $this->namespace;
     }
 
-    public function getQualifiedName()
+    public function getQualifiedName(): ?string
     {
         if ($this->namespace) {
             return $this->namespace.'\\'.$this->name;
@@ -241,12 +231,12 @@ class PhpFunction extends AbstractBuilder
         return $this->name;
     }
 
-    public function getParameters()
+    public function getParameters(): array
     {
         return $this->parameters;
     }
 
-    public function getBody()
+    public function getBody(): string
     {
         return $this->body;
     }
@@ -256,7 +246,7 @@ class PhpFunction extends AbstractBuilder
         return $this->docblock;
     }
 
-    public function isReferenceReturned()
+    public function isReferenceReturned(): bool
     {
         return $this->referenceReturned;
     }
@@ -266,12 +256,12 @@ class PhpFunction extends AbstractBuilder
         return $this->returnType;
     }
 
-    public function hasReturnType()
+    public function hasReturnType(): bool
     {
         return null !== $this->getReturnType();
     }
 
-    public function hasBuiltinReturnType()
+    public function hasBuiltinReturnType(): bool
     {
         return $this->returnTypeBuiltin;
     }

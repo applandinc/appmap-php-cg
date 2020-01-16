@@ -18,16 +18,18 @@
 
 namespace CG\Generator;
 
+use InvalidArgumentException;
+
 /**
  * Abstract PHP member class.
  *
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
-abstract class AbstractPhpMember extends AbstractBuilder
+abstract class AbstractPhpMember
 {
-    const VISIBILITY_PRIVATE = 'private';
-    const VISIBILITY_PROTECTED = 'protected';
-    const VISIBILITY_PUBLIC = 'public';
+    public const VISIBILITY_PRIVATE = 'private';
+    public const VISIBILITY_PROTECTED = 'protected';
+    public const VISIBILITY_PUBLIC = 'public';
 
     private $static = false;
     private $visibility = self::VISIBILITY_PUBLIC;
@@ -41,6 +43,8 @@ abstract class AbstractPhpMember extends AbstractBuilder
 
     /**
      * @param string $name
+     * @return AbstractPhpMember
+     * @noinspection ReturnTypeCanBeDeclaredInspection
      */
     public function setName($name)
     {
@@ -51,13 +55,15 @@ abstract class AbstractPhpMember extends AbstractBuilder
 
     /**
      * @param string $visibility
+     * @return AbstractPhpMember
+     * @noinspection ReturnTypeCanBeDeclaredInspection
      */
     public function setVisibility($visibility)
     {
         if ($visibility !== self::VISIBILITY_PRIVATE
             && $visibility !== self::VISIBILITY_PROTECTED
             && $visibility !== self::VISIBILITY_PUBLIC) {
-            throw new \InvalidArgumentException(sprintf('The visibility "%s" does not exist.', $visibility));
+            throw new InvalidArgumentException(sprintf('The visibility "%s" does not exist.', $visibility));
         }
 
         $this->visibility = $visibility;
@@ -67,6 +73,8 @@ abstract class AbstractPhpMember extends AbstractBuilder
 
     /**
      * @param boolean $bool
+     * @return AbstractPhpMember
+     * @noinspection ReturnTypeCanBeDeclaredInspection
      */
     public function setStatic($bool)
     {
@@ -77,6 +85,8 @@ abstract class AbstractPhpMember extends AbstractBuilder
 
     /**
      * @param string|null $doc
+     * @return AbstractPhpMember
+     * @noinspection ReturnTypeCanBeDeclaredInspection
      */
     public function setDocblock($doc)
     {
@@ -85,12 +95,12 @@ abstract class AbstractPhpMember extends AbstractBuilder
         return $this;
     }
 
-    public function isStatic()
+    public function isStatic(): bool
     {
         return $this->static;
     }
 
-    public function getVisibility()
+    public function getVisibility(): string
     {
         return $this->visibility;
     }

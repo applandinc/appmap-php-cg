@@ -24,6 +24,9 @@ use CG\Generator\PhpParameter;
 use CG\Generator\PhpProperty;
 use CG\Generator\PhpMethod;
 use CG\Generator\PhpClass;
+use Closure;
+use ReflectionClass;
+use ReflectionException;
 
 /**
  * Interception Generator.
@@ -39,7 +42,7 @@ class InterceptionGenerator implements GeneratorInterface
     private $filter;
     private $requiredFile;
 
-    public function setRequiredFile($file)
+    public function setRequiredFile($file): void
     {
         $this->requiredFile = $file;
     }
@@ -47,17 +50,22 @@ class InterceptionGenerator implements GeneratorInterface
     /**
      * @param string $prefix
      */
-    public function setPrefix($prefix)
+    public function setPrefix($prefix): void
     {
         $this->prefix = $prefix;
     }
 
-    public function setFilter(\Closure $filter)
+    public function setFilter(Closure $filter): void
     {
         $this->filter = $filter;
     }
 
-    public function generate(\ReflectionClass $originalClass, PhpClass $genClass)
+    /**
+     * @param ReflectionClass $originalClass
+     * @param PhpClass $genClass
+     * @throws ReflectionException
+     */
+    public function generate(ReflectionClass $originalClass, PhpClass $genClass): void
     {
         $methods = ReflectionUtils::getOverrideableMethods($originalClass);
 
@@ -90,7 +98,7 @@ class InterceptionGenerator implements GeneratorInterface
         $loaderParam = new PhpParameter();
         $loaderParam
             ->setName('loader')
-            ->setType('CG\Proxy\InterceptorLoaderInterface')
+            ->setType(InterceptorLoaderInterface::class)
         ;
         $loaderSetter->addParameter($loaderParam);
 

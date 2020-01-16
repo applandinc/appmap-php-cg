@@ -25,6 +25,8 @@ use CG\Generator\PhpParameter;
 use CG\Generator\PhpMethod;
 use CG\Generator\PhpProperty;
 use CG\Generator\PhpClass;
+use ReflectionClass;
+use ReflectionException;
 
 /**
  * Generator for creating lazy-initializing instances.
@@ -38,7 +40,6 @@ class LazyInitializerGenerator implements GeneratorInterface
 {
     private $writer;
     private $prefix = '__CG__';
-    private $markerInterface;
 
     public function __construct()
     {
@@ -48,43 +49,27 @@ class LazyInitializerGenerator implements GeneratorInterface
     /**
      * @param string $prefix
      */
-    public function setPrefix($prefix)
+    public function setPrefix($prefix): void
     {
         $this->prefix = $prefix;
     }
 
-    /**
-     * Sets the marker interface which should be implemented by the
-     * generated classes.
-     *
-     * @param string $interface The FQCN of the interface
-     */
-    public function setMarkerInterface($interface)
-    {
-        $this->markerInterface = $interface;
-    }
 
     /**
      * Generates the necessary methods in the class.
      *
-     * @param  \ReflectionClass $originalClass
-     * @param  PhpClass         $class
+     * @param ReflectionClass $originalClass
+     * @param PhpClass $class
      * @return void
+     * @throws ReflectionException
      */
-    public function generate(\ReflectionClass $originalClass, PhpClass $class)
+    public function generate(ReflectionClass $originalClass, PhpClass $class): void
     {
         $methods = ReflectionUtils::getOverrideableMethods($originalClass, true);
 
         // no public, non final methods
         if (empty($methods)) {
             return;
-        }
-
-        if (null !== $this->markerInterface) {
-            $class->setImplementedInterfaces(array_merge(
-                $class->getImplementedInterfaces(),
-                [$this->markerInterface]
-            ));
         }
 
         $initializer = new PhpProperty();
@@ -104,7 +89,7 @@ class LazyInitializerGenerator implements GeneratorInterface
 
         $parameter = new PhpParameter();
         $parameter->setName('initializer');
-        $parameter->setType('\CG\Proxy\LazyInitializerInterface');
+        $parameter->setType(LazyInitializerInterface::class);
         $initializerSetter->addParameter($parameter);
         $class->setMethod($initializerSetter);
 
@@ -128,7 +113,12 @@ class LazyInitializerGenerator implements GeneratorInterface
         $class->setMethod($initializingMethod);
     }
 
-    private function addMethods(PhpClass $class, array $methods)
+    /**
+     * @param PhpClass $class
+     * @param array $methods
+     * @throws ReflectionException
+     */
+    private function addMethods(PhpClass $class, array $methods): void
     {
         foreach ($methods as $method) {
             $initializingCode = 'if (false === $this->'.$this->prefix.'initialized) {'."\n"

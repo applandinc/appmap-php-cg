@@ -12,13 +12,17 @@ use CG\Tests\Generator\Fixture\SubFixture\Baz;
 use CG\Tests\Generator\Fixture\SubFixture\Foo;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use ReflectionException;
 
 class Php7ClassTest extends TestCase
 {
-    public function testFromReflection()
+    /**
+     * @throws ReflectionException
+     */
+    public function testFromReflection(): void
     {
         if (PHP_VERSION_ID < 70000) {
-            $this->markTestSkipped("Test is only valid for PHP >=7");
+            $this->markTestSkipped('Test is only valid for PHP >=7');
         }
         $class = new PhpClass(EntityPhp7::class);
         $class

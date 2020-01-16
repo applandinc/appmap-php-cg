@@ -19,6 +19,7 @@
 namespace CG\Proxy;
 
 use CG\Generator\PhpClass;
+use ReflectionClass;
 
 /**
  * Interface for enhancing generators.
@@ -30,9 +31,9 @@ interface GeneratorInterface
     /**
      * Generates the necessary changes in the class.
      *
-     * @param \ReflectionClass $originalClass
+     * @param ReflectionClass $originalClass
      * @param PhpClass $generatedClass The generated class
      * @return void
      */
-    public function generate(\ReflectionClass $originalClass, PhpClass $generatedClass);
+    public function generate(ReflectionClass $originalClass, PhpClass $generatedClass): void;
 }

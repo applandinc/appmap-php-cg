@@ -22,6 +22,7 @@ abstract class ClassUtils
 {
     /**
      * @param string $className
+     * @return false|string
      */
     public static function getUserClass($className)
     {
@@ -31,6 +32,4 @@ abstract class ClassUtils
 
         return substr($className, $pos + NamingStrategyInterface::SEPARATOR_LENGTH + 2);
     }
-
-    final private function __construct() {}
 }

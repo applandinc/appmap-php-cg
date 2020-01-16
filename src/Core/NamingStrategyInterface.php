@@ -18,6 +18,8 @@
 
 namespace CG\Core;
 
+use ReflectionClass;
+
 /**
  * The naming strategy interface.
  *
@@ -25,8 +27,8 @@ namespace CG\Core;
  */
 interface NamingStrategyInterface
 {
-    const SEPARATOR = '__CG__';
-    const SEPARATOR_LENGTH = 6;
+    public const SEPARATOR = '__CG__';
+    public const SEPARATOR_LENGTH = 6;
 
     /**
      * Returns the class name for the proxy class.
@@ -43,8 +45,8 @@ interface NamingStrategyInterface
      *    | Bar\Baz                    | Foo\Doo\__CG__\Bar\Baz       |
      *    +----------------------------+------------------------------+
      *
-     * @param \ReflectionClass $class
+     * @param ReflectionClass $class
      * @return string the class name for the generated class
      */
-    public function getClassName(\ReflectionClass $class);
+    public function getClassName(ReflectionClass $class): string;
 }

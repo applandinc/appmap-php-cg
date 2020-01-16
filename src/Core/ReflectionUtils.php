@@ -18,38 +18,46 @@
 
 namespace CG\Core;
 
+use ReflectionClass;
+use ReflectionMethod;
+
 abstract class ReflectionUtils
 {
     /**
+     * @param ReflectionClass $class
      * @param boolean $publicOnly
+     * @return array
      */
-    public static function getOverrideableMethods(\ReflectionClass $class, $publicOnly = false)
+    public static function getOverrideableMethods(ReflectionClass $class, $publicOnly = false): array
     {
-        $filter = \ReflectionMethod::IS_PUBLIC;
+        $filter = ReflectionMethod::IS_PUBLIC;
 
         if (!$publicOnly) {
-            $filter |= \ReflectionMethod::IS_PROTECTED;
+            $filter |= ReflectionMethod::IS_PROTECTED;
         }
 
         return array_filter(
             $class->getMethods($filter),
-            function($method) { return !$method->isFinal() && !$method->isStatic(); }
+            static function(ReflectionMethod $method) { return !$method->isFinal() && !$method->isStatic(); }
         );
     }
 
     /**
      * @param string $docComment
+     * @return string
      */
-    public static function getUnindentedDocComment($docComment)
+    public static function getUnindentedDocComment($docComment): string
     {
+        $docBlock = '';
         $lines = explode("\n", $docComment);
-        for ($i=0,$c=count($lines); $i<$c; $i++) {
+        $c = count($lines);
+        foreach ($lines as $i => $iValue) {
             if (0 === $i) {
                 $docBlock = $lines[0]."\n";
                 continue;
             }
 
-            $docBlock .= ' '.ltrim($lines[$i]);
+            $docBlock .= ' '.ltrim($iValue);
 
             if ($i+1 < $c) {
                 $docBlock .= "\n";
@@ -58,6 +66,4 @@ abstract class ReflectionUtils
 
         return $docBlock;
     }
-
-    final private function __construct() { }
 }

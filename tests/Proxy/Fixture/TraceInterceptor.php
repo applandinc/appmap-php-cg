@@ -7,13 +7,17 @@ use CG\Proxy\MethodInterceptorInterface;
 
 class TraceInterceptor implements MethodInterceptorInterface
 {
-    private array $log;
+    /**
+     * @var array|string[]
+     */
+    private $log;
 
     public function getLog(): array
     {
         return $this->log;
     }
 
+    /** @noinspection PhpUnused */
     public function intercept(MethodInvocation $method)
     {
         $message = sprintf('%s::%s(', $method->reflection->class, $method->reflection->name);

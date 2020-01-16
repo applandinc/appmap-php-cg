@@ -18,6 +18,8 @@
 
 namespace CG\Core;
 
+use ReflectionClass;
+
 /**
  * The default naming strategy.
  *
@@ -32,7 +34,7 @@ class DefaultNamingStrategy implements NamingStrategyInterface
         $this->prefix = $prefix;
     }
 
-    public function getClassName(\ReflectionClass $class)
+    public function getClassName(ReflectionClass $class): string
     {
         $userClass = ClassUtils::getUserClass($class->name);
 

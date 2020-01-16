@@ -30,66 +30,71 @@ interface DefaultVisitorInterface
      *
      * @return void
      */
-    public function reset();
+    public function reset(): void;
+
+    /**
+     * @param PhpClass $class
+     * @return void
+     */
+    public function startVisitingClass(PhpClass $class): void;
 
     /**
      * @return void
      */
-    public function startVisitingClass(PhpClass $class);
-
-    /**
-     * @return void
-     */
-    public function startVisitingClassConstants();
+    public function startVisitingClassConstants(): void;
 
     /**
      * @param  PhpConstant $constant
      * @return void
      */
-    public function visitClassConstant(PhpConstant $constant);
+    public function visitClassConstant(PhpConstant $constant): void;
 
     /**
      * @return void
      */
-    public function endVisitingClassConstants();
+    public function endVisitingClassConstants(): void;
 
     /**
      * @return void
      */
-    public function startVisitingProperties();
+    public function startVisitingProperties(): void;
+
+    /**
+     * @param PhpProperty $property
+     * @return void
+     */
+    public function visitProperty(PhpProperty $property): void;
 
     /**
      * @return void
      */
-    public function visitProperty(PhpProperty $property);
+    public function endVisitingProperties(): void;
 
     /**
      * @return void
      */
-    public function endVisitingProperties();
+    public function startVisitingMethods(): void;
+
+    /**
+     * @param PhpMethod $method
+     * @return void
+     */
+    public function visitMethod(PhpMethod $method): void;
 
     /**
      * @return void
      */
-    public function startVisitingMethods();
+    public function endVisitingMethods(): void;
 
     /**
+     * @param PhpClass $class
      * @return void
      */
-    public function visitMethod(PhpMethod $method);
+    public function endVisitingClass(PhpClass $class): void;
 
     /**
+     * @param PhpFunction $function
      * @return void
      */
-    public function endVisitingMethods();
-
-    /**
-     * @return void
-     */
-    public function endVisitingClass(PhpClass $class);
-
-    /**
-     * @return void
-     */
-    public function visitFunction(PhpFunction $function);
+    public function visitFunction(PhpFunction $function): void;
 }

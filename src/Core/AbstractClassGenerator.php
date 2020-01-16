@@ -26,10 +26,16 @@ use ReflectionClass;
  *
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
-abstract class AbstractClassGenerator implements ClassGeneratorInterface
+abstract class AbstractClassGenerator
 {
-    private ?NamingStrategyInterface $namingStrategy = null;
-    private ?GeneratorStrategyInterface $generatorStrategy = null;
+    /**
+     * @var NamingStrategyInterface|null
+     */
+    private $namingStrategy;
+    /**
+     * @var GeneratorStrategyInterface|null
+     */
+    private $generatorStrategy;
 
     public function setNamingStrategy(NamingStrategyInterface $namingStrategy): void
     {

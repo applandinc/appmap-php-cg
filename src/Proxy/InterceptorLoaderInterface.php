@@ -18,6 +18,8 @@
 
 namespace CG\Proxy;
 
+use ReflectionMethod;
+
 /**
  * Interception Loader.
  *
@@ -31,8 +33,9 @@ interface InterceptorLoaderInterface
     /**
      * Loads interceptors.
      *
-     * @param \ReflectionMethod $method
+     * @param ReflectionMethod $method
      * @return MethodInterceptorInterface[]
+     * @noinspection PhpUnused
      */
-    function loadInterceptors(\ReflectionMethod $method);
+    public function loadInterceptors(ReflectionMethod $method): array;
 }

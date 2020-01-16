@@ -18,6 +18,8 @@
 
 namespace CG\Proxy;
 
+use ReflectionMethod;
+
 class RegexInterceptionLoader implements InterceptorLoaderInterface
 {
     private $interceptors;
@@ -27,7 +29,8 @@ class RegexInterceptionLoader implements InterceptorLoaderInterface
         $this->interceptors = $interceptors;
     }
 
-    public function loadInterceptors(\ReflectionMethod $method)
+    /** @noinspection PhpUnused */
+    public function loadInterceptors(ReflectionMethod $method): array
     {
         $signature = $method->class.'::'.$method->name;
 

@@ -18,6 +18,8 @@
 
 namespace CG\Generator;
 
+use RuntimeException;
+
 /**
  * A writer implementation.
  *
@@ -31,19 +33,19 @@ class Writer
     private $indentationSpaces = 4;
     private $indentationLevel = 0;
 
-    public function indent()
+    public function indent(): Writer
     {
-        $this->indentationLevel += 1;
+        ++$this->indentationLevel;
 
         return $this;
     }
 
-    public function outdent()
+    public function outdent(): Writer
     {
-        $this->indentationLevel -= 1;
+        --$this->indentationLevel;
 
         if ($this->indentationLevel < 0) {
-            throw new \RuntimeException('The identation level cannot be less than zero.');
+            throw new RuntimeException('The identation level cannot be less than zero.');
         }
 
         return $this;
@@ -51,8 +53,9 @@ class Writer
 
     /**
      * @param string $content
+     * @return Writer
      */
-    public function writeln($content)
+    public function writeln($content): Writer
     {
         $this->write($content."\n");
 
@@ -61,18 +64,20 @@ class Writer
 
     /**
      * @param string $content
+     * @return Writer
      */
-    public function write($content)
+    public function write($content): Writer
     {
         $lines = explode("\n", $content);
-        for ($i=0,$c=count($lines); $i<$c; $i++) {
+        $c = count($lines);
+        foreach ($lines as $i => $iValue) {
             if ($this->indentationLevel > 0
                 && !empty($lines[$i])
                 && (empty($this->content) || "\n" === substr($this->content, -1))) {
                 $this->content .= str_repeat(' ', $this->indentationLevel * $this->indentationSpaces);
             }
 
-            $this->content .= $lines[$i];
+            $this->content .= $iValue;
 
             if ($i+1 < $c) {
                 $this->content .= "\n";
@@ -82,7 +87,7 @@ class Writer
         return $this;
     }
 
-    public function rtrim()
+    public function rtrim(): Writer
     {
         $addNl = "\n" === substr($this->content, -1);
         $this->content = rtrim($this->content);
@@ -94,7 +99,7 @@ class Writer
         return $this;
     }
 
-    public function reset()
+    public function reset(): Writer
     {
         $this->content = '';
         $this->indentationLevel = 0;
@@ -102,7 +107,7 @@ class Writer
         return $this;
     }
 
-    public function getContent()
+    public function getContent(): string
     {
         return $this->content;
     }

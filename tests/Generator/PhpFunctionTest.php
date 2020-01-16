@@ -5,6 +5,7 @@ namespace CG\Tests\Generator;
 use CG\Generator\PhpFunction;
 use CG\Generator\PhpParameter;
 use PHPUnit\Framework\TestCase;
+use foo\bar;
 
 class PhpFunctionTest extends TestCase
 {
@@ -24,10 +25,10 @@ class PhpFunctionTest extends TestCase
     {
         $func = new PhpFunction();
 
-        $this->assertSame($func, $func->setQualifiedName('foo\bar'));
+        $this->assertSame($func, $func->setQualifiedName(bar::class));
         $this->assertEquals('foo', $func->getNamespace());
         $this->assertEquals('bar', $func->getName());
-        $this->assertEquals('foo\bar', $func->getQualifiedName());
+        $this->assertEquals(bar::class, $func->getQualifiedName());
 
         $this->assertSame($func, $func->setQualifiedName('foo'));
         $this->assertNull($func->getNamespace());

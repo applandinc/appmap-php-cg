@@ -11,9 +11,13 @@ use CG\Tests\Generator\Fixture\Entity;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use ReflectionException;
 
 class PhpClassTest extends TestCase
 {
+    /**
+     * @throws ReflectionException
+     */
     public function testFromReflection(): void
     {
         $class = new PhpClass();
@@ -105,7 +109,6 @@ class PhpClassTest extends TestCase
         $this->assertFalse($class->hasConstant('foo'));
 
         $phpConstant = $class->getConstant('bar');
-        $this->assertInstanceOf(PhpConstant::class, $phpConstant);
         $this->assertEquals('bar', $phpConstant->getName());
         $this->assertEquals('baz', $phpConstant->getValue());
 
@@ -186,16 +189,10 @@ class PhpClassTest extends TestCase
         $this->assertEquals(['foo' => 'bar', 'Bar' => 'Foo\Bar', 'Baz' => 'Bar\Baz'], $class->getUseStatements());
     }
 
-    /**
-     * @dataProvider usesClassDataProvider
-     * @param string $_
-     * @param string $typedef
-     * @param bool $__
-     */
-    public function testUsesClassWithoutUseStatements(string $_, string $typedef, bool $__): void
+    public function testUsesClassWithoutUseStatements(): void
     {
         $class = new PhpClass();
-        $this->assertFalse($class->uses($typedef));
+        $this->assertFalse($class->uses('DateTime'));
     }
 
     /**
@@ -213,6 +210,7 @@ class PhpClassTest extends TestCase
 
     public function usesClassDataProvider(): array
     {
+        /** @noinspection ClassConstantCanBeUsedInspection */
         return [
             ['\DateTime', '\DateTime', false], // using fqdn from root ignores use statements
             ['\DateTime', 'DateTime', true],

@@ -19,6 +19,11 @@
 namespace CG\Generator;
 
 use CG\Core\ReflectionUtils;
+use InvalidArgumentException;
+use ReflectionException;
+use ReflectionMethod;
+use ReflectionNamedType;
+use ReflectionParameter;
 
 /**
  * Represents a PHP method.
@@ -31,33 +36,42 @@ class PhpMethod extends AbstractPhpMember
     private $abstract = false;
     private $parameters = [];
     private $referenceReturned = false;
-    private $returnType = null;
+    private $returnType;
     private $returnTypeBuiltin = false;
     private $body = '';
-    private bool $nullAllowedForReturnType = false;
+    /**
+     * @var bool
+     */
+    private $nullAllowedForReturnType = false;
 
     /**
      * @param string|null $name
+     * @return PhpMethod
      */
-    public static function create($name = null)
+    public static function create($name = null): PhpMethod
     {
         return new static($name);
     }
 
-    public static function fromReflection(\ReflectionMethod $ref)
+    /**
+     * @param ReflectionMethod $ref
+     * @return PhpMethod
+     * @throws ReflectionException
+     */
+    public static function fromReflection(ReflectionMethod $ref): PhpMethod
     {
         $method = new static();
         $method
             ->setFinal($ref->isFinal())
             ->setAbstract($ref->isAbstract())
             ->setStatic($ref->isStatic())
-            ->setVisibility($ref->isPublic() ? self::VISIBILITY_PUBLIC : ($ref->isProtected() ? self::VISIBILITY_PROTECTED : self::VISIBILITY_PRIVATE))
+            ->setVisibility(self::getVisibilityFromReflection($ref))
             ->setReferenceReturned($ref->returnsReference())
             ->setName($ref->name)
         ;
 
         if (method_exists($ref, 'getReturnType') && $type = $ref->getReturnType()) {
-            if ($type instanceof \ReflectionNamedType) {
+            if ($type instanceof ReflectionNamedType) {
                 $typeName = $type->getName();
             } else {
                 $typeName = (string)$type;
@@ -78,17 +92,37 @@ class PhpMethod extends AbstractPhpMember
     }
 
     /**
+     * @param ReflectionParameter $parameter
      * @return PhpParameter
+     * @throws ReflectionException
      */
-    protected static function createParameter(\ReflectionParameter $parameter)
+    protected static function createParameter(ReflectionParameter $parameter): PhpParameter
     {
         return PhpParameter::fromReflection($parameter);
     }
 
     /**
-     * @param boolean $bool
+     * @param ReflectionMethod $ref
+     * @return string
      */
-    public function setFinal($bool)
+    public static function getVisibilityFromReflection(ReflectionMethod $ref): string
+    {
+        if ($ref->isPublic()) {
+            return self::VISIBILITY_PUBLIC;
+        }
+
+        if ($ref->isProtected()) {
+            return self::VISIBILITY_PROTECTED;
+        }
+
+        return self::VISIBILITY_PRIVATE;
+    }
+
+    /**
+     * @param boolean $bool
+     * @return PhpMethod
+     */
+    public function setFinal($bool): PhpMethod
     {
         $this->final = (Boolean) $bool;
 
@@ -97,8 +131,9 @@ class PhpMethod extends AbstractPhpMember
 
     /**
      * @param boolean $bool
+     * @return PhpMethod
      */
-    public function setAbstract($bool)
+    public function setAbstract($bool): PhpMethod
     {
         $this->abstract = $bool;
 
@@ -107,8 +142,9 @@ class PhpMethod extends AbstractPhpMember
 
     /**
      * @param boolean $bool
+     * @return PhpMethod
      */
-    public function setReferenceReturned($bool)
+    public function setReferenceReturned($bool): PhpMethod
     {
         $this->referenceReturned = (Boolean) $bool;
 
@@ -117,29 +153,30 @@ class PhpMethod extends AbstractPhpMember
 
     /**
      * @param string $body
+     * @return PhpMethod
      */
-    public function setBody($body)
+    public function setBody($body): PhpMethod
     {
         $this->body = $body;
 
         return $this;
     }
 
-    public function setParameters(array $parameters)
+    public function setParameters(array $parameters): PhpMethod
     {
         $this->parameters = array_values($parameters);
 
         return $this;
     }
 
-    public function addParameter(PhpParameter $parameter)
+    public function addParameter(PhpParameter $parameter): PhpMethod
     {
         $this->parameters[] = $parameter;
 
         return $this;
     }
 
-    public function setReturnType(string $type, $nullAllowed = false)
+    public function setReturnType(string $type, $nullAllowed = false): PhpMethod
     {
         $this->returnType = $type;
         $this->returnTypeBuiltin = BuiltinType::isBuiltin($type);
@@ -147,36 +184,10 @@ class PhpMethod extends AbstractPhpMember
         return $this;
     }
 
-    /**
-     * @param string|integer $nameOrIndex
-     *
-     * @return PhpParameter
-     */
-    public function getParameter($nameOrIndex)
+    public function replaceParameter($position, PhpParameter $parameter): PhpMethod
     {
-        if (is_int($nameOrIndex)) {
-            if ( ! isset($this->parameters[$nameOrIndex])) {
-                throw new \InvalidArgumentException(sprintf('There is no parameter at position %d (0-based).', $nameOrIndex));
-            }
-
-            return $this->parameters[$nameOrIndex];
-        }
-
-        foreach ($this->parameters as $param) {
-            assert($param instanceof PhpParameter);
-
-            if ($param->getName() === $nameOrIndex) {
-                return $param;
-            }
-        }
-
-        throw new \InvalidArgumentException(sprintf('There is no parameter named "%s".', $nameOrIndex));
-    }
-
-    public function replaceParameter($position, PhpParameter $parameter)
-    {
-        if ($position < 0 || $position > strlen($this->parameters)) {
-            throw new \InvalidArgumentException(sprintf('The position must be in the range [0, %d].', strlen($this->parameters)));
+        if ($position < 0 || $position > count($this->parameters)) {
+            throw new InvalidArgumentException(sprintf('The position must be in the range [0, %d].', count($this->parameters)));
         }
         $this->parameters[$position] = $parameter;
 
@@ -185,11 +196,12 @@ class PhpMethod extends AbstractPhpMember
 
     /**
      * @param integer $position
+     * @return PhpMethod
      */
-    public function removeParameter($position)
+    public function removeParameter($position): PhpMethod
     {
         if (!isset($this->parameters[$position])) {
-            throw new \InvalidArgumentException(sprintf('There is no parameter at position "%d" does not exist.', $position));
+            throw new InvalidArgumentException(sprintf('There is no parameter at position "%d" does not exist.', $position));
         }
         unset($this->parameters[$position]);
         $this->parameters = array_values($this->parameters);
@@ -197,27 +209,27 @@ class PhpMethod extends AbstractPhpMember
         return $this;
     }
 
-    public function isFinal()
+    public function isFinal(): bool
     {
         return $this->final;
     }
 
-    public function isAbstract()
+    public function isAbstract(): bool
     {
         return $this->abstract;
     }
 
-    public function isReferenceReturned()
+    public function isReferenceReturned(): bool
     {
         return $this->referenceReturned;
     }
 
-    public function getBody()
+    public function getBody(): string
     {
         return $this->body;
     }
 
-    public function getParameters()
+    public function getParameters(): array
     {
         return $this->parameters;
     }
@@ -227,12 +239,12 @@ class PhpMethod extends AbstractPhpMember
         return $this->returnType;
     }
 
-    public function hasReturnType()
+    public function hasReturnType(): bool
     {
         return null !== $this->getReturnType();
     }
 
-    public function hasBuiltInReturnType()
+    public function hasBuiltInReturnType(): bool
     {
         return $this->returnTypeBuiltin;
     }
@@ -240,5 +252,29 @@ class PhpMethod extends AbstractPhpMember
     public function isNullAllowedForReturnType(): bool
     {
         return $this->nullAllowedForReturnType;
+    }
+
+    public function setName($name): PhpMethod
+    {
+        parent::setName($name);
+        return $this;
+    }
+
+    public function setVisibility($visibility): PhpMethod
+    {
+        parent::setVisibility($visibility);
+        return $this;
+    }
+
+    public function setStatic($bool): PhpMethod
+    {
+        parent::setStatic($bool);
+        return $this;
+    }
+
+    public function setDocblock($doc): PhpMethod
+    {
+        parent::setDocblock($doc);
+        return $this;
     }
 }

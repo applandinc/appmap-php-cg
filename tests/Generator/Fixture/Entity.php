@@ -1,7 +1,4 @@
-<?php
-/** @noinspection PhpUndefinedClassInspection */
-/** @noinspection PhpFullyQualifiedNameUsageInspection */
-/** @noinspection PhpMissingFieldTypeInspection */
+<?php /** @noinspection ALL */
 
 namespace CG\Tests\Generator\Fixture;
 

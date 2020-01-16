@@ -14,9 +14,9 @@ class ReflectionUtilsTest extends TestCase
         $ref = new ReflectionClass(OverridableReflectionTest::class);
         $methods = ReflectionUtils::getOverrideableMethods($ref);
 
-        $this->assertEquals(4, count($methods));
+        $this->assertCount(4, $methods);
 
-        $methods = array_map(function ($v) {
+        $methods = array_map(static function ($v) {
             return $v->name;
         }, $methods);
         sort($methods);
@@ -38,36 +38,45 @@ class ReflectionUtilsTest extends TestCase
 
 abstract class OverridableReflectionTest
 {
-    public function a()
+    /** @noinspection PhpUnused */
+    public function a(): void
     {
     }
 
-    final public function b()
+    /** @noinspection PhpUnused */
+    final public function b(): void
     {
     }
 
-    public static function c()
+    /** @noinspection PhpUnused */
+    public static function c(): void
     {
     }
 
+    /** @noinspection PhpUnused */
     abstract public function d();
 
-    protected function e()
+    /** @noinspection PhpUnused */
+    protected function e(): void
     {
     }
 
-    final protected function f()
+    /** @noinspection PhpUnused */
+    final protected function f(): void
     {
     }
 
-    protected static function g()
+    /** @noinspection PhpUnused */
+    protected static function g(): void
     {
     }
 
+    /** @noinspection PhpUnused */
     abstract protected function h();
 
     /** @noinspection PhpUnusedPrivateMethodInspection */
-    private function i()
+    /** @noinspection PhpUnused */
+    private function i(): void
     {
     }
 }

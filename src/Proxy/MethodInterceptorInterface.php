@@ -18,6 +18,8 @@
 
 namespace CG\Proxy;
 
+use Exception;
+
 /**
  * Interface for Method Interceptors.
  *
@@ -36,7 +38,7 @@ interface MethodInterceptorInterface
      *
      * @param  MethodInvocation $invocation
      * @return mixed            the return value for the method invocation
-     * @throws \Exception       may throw any exception
+     * @throws Exception       may throw any exception
      */
     public function intercept(MethodInvocation $invocation);
 }

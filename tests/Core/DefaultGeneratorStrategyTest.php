@@ -15,13 +15,13 @@ class DefaultGeneratorStrategyTest extends TestCase
     public function testGenerate(): void
     {
         $strategy = new DefaultGeneratorStrategy();
-        $strategy->setConstantSortFunc(function ($a, $b) {
+        $strategy->setConstantSortFunc(static function ($a, $b) {
             return strcasecmp($a, $b);
         });
-        $strategy->setPropertySortFunc(function (AbstractPhpMember $a, AbstractPhpMember $b) {
+        $strategy->setPropertySortFunc(static function (AbstractPhpMember $a, AbstractPhpMember $b) {
             return strcasecmp($a->getName(), $b->getName());
         });
-        $strategy->setMethodSortFunc(fn($a, $b) => DefaultNavigator::defaultMethodSortFunc($a, $b));
+        $strategy->setMethodSortFunc(static function($a, $b) {return DefaultNavigator::defaultMethodSortFunc($a, $b);});
 
         $this->assertEquals(
             $this->getContent('GenerationTestClass_A.php'),
@@ -32,10 +32,10 @@ class DefaultGeneratorStrategyTest extends TestCase
     public function testGenerateChangedConstantOrder(): void
     {
         $strategy = new DefaultGeneratorStrategy();
-        $strategy->setConstantSortFunc(function ($a, $b) {
+        $strategy->setConstantSortFunc(static function ($a, $b) {
             return strcasecmp($b, $a);
         });
-        $strategy->setPropertySortFunc(function (AbstractPhpMember $a, AbstractPhpMember $b) {
+        $strategy->setPropertySortFunc(static function (AbstractPhpMember $a, AbstractPhpMember $b) {
             return strcasecmp($a->getName(), $b->getName());
         });
 

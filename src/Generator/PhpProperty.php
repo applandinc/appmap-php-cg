@@ -19,6 +19,7 @@
 namespace CG\Generator;
 
 use CG\Core\ReflectionUtils;
+use ReflectionProperty;
 
 /**
  * Represents a PHP property.
@@ -32,19 +33,20 @@ class PhpProperty extends AbstractPhpMember
 
     /**
      * @param string|null $name
+     * @return PhpProperty
      */
-    public static function create($name = null)
+    public static function create($name = null): PhpProperty
     {
         return new static($name);
     }
 
-    public static function fromReflection(\ReflectionProperty $ref)
+    public static function fromReflection(ReflectionProperty $ref): PhpProperty
     {
         $property = new static();
         $property
             ->setName($ref->name)
             ->setStatic($ref->isStatic())
-            ->setVisibility($ref->isPublic() ? self::VISIBILITY_PUBLIC : ($ref->isProtected() ? self::VISIBILITY_PROTECTED : self::VISIBILITY_PRIVATE))
+            ->setVisibility(self::getVisibilityFromReflection($ref))
         ;
 
         if ($docComment = $ref->getDocComment()) {
@@ -60,9 +62,27 @@ class PhpProperty extends AbstractPhpMember
     }
 
     /**
-     * @param string|false $value
+     * @param ReflectionProperty $ref
+     * @return string
      */
-    public function setDefaultValue($value)
+    public static function getVisibilityFromReflection(ReflectionProperty $ref): string
+    {
+        if ($ref->isPublic()) {
+            return self::VISIBILITY_PUBLIC;
+        }
+
+        if ($ref->isProtected()) {
+            return self::VISIBILITY_PROTECTED;
+        }
+
+        return self::VISIBILITY_PRIVATE;
+    }
+
+    /**
+     * @param string|false $value
+     * @return PhpProperty
+     */
+    public function setDefaultValue($value): PhpProperty
     {
         $this->defaultValue = $value;
         $this->hasDefaultValue = true;
@@ -70,7 +90,7 @@ class PhpProperty extends AbstractPhpMember
         return $this;
     }
 
-    public function unsetDefaultValue()
+    public function unsetDefaultValue(): PhpProperty
     {
         $this->hasDefaultValue = false;
         $this->defaultValue = null;
@@ -78,7 +98,7 @@ class PhpProperty extends AbstractPhpMember
         return $this;
     }
 
-    public function hasDefaultValue()
+    public function hasDefaultValue(): bool
     {
         return $this->hasDefaultValue;
     }
@@ -86,5 +106,30 @@ class PhpProperty extends AbstractPhpMember
     public function getDefaultValue()
     {
         return $this->defaultValue;
+    }
+
+
+    public function setName($name): PhpProperty
+    {
+        parent::setName($name);
+        return $this;
+    }
+
+    public function setVisibility($visibility): PhpProperty
+    {
+        parent::setVisibility($visibility);
+        return $this;
+    }
+
+    public function setStatic($bool): PhpProperty
+    {
+        parent::setStatic($bool);
+        return $this;
+    }
+
+    public function setDocblock($doc): PhpProperty
+    {
+        parent::setDocblock($doc);
+        return $this;
     }
 }

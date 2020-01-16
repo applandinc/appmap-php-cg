@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection ALL */
 
 namespace CG\Tests\Generator\Fixture;
 
@@ -18,7 +18,7 @@ class EntityPhp7
     /**
      * @var integer
      */
-    private int $id = 0;
+    private $id = 0;
 
     /**
      * @return int

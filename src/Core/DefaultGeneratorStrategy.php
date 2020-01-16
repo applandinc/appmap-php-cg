@@ -22,6 +22,7 @@ use CG\Generator\DefaultVisitorInterface;
 use CG\Generator\PhpClass;
 use CG\Generator\DefaultVisitor;
 use CG\Generator\DefaultNavigator;
+use Closure;
 
 /**
  * The default generator strategy.
@@ -33,7 +34,13 @@ use CG\Generator\DefaultNavigator;
  */
 class DefaultGeneratorStrategy implements GeneratorStrategyInterface
 {
+    /**
+     * @var DefaultNavigator
+     */
     private $navigator;
+    /**
+     * @var DefaultVisitorInterface
+     */
     private $visitor;
 
     public function __construct(DefaultVisitorInterface $visitor = null)
@@ -42,17 +49,17 @@ class DefaultGeneratorStrategy implements GeneratorStrategyInterface
         $this->visitor = $visitor ?: new DefaultVisitor();
     }
 
-    public function setConstantSortFunc(\Closure $func = null)
+    public function setConstantSortFunc(Closure $func = null): void
     {
         $this->navigator->setConstantSortFunc($func);
     }
 
-    public function setMethodSortFunc(\Closure $func = null)
+    public function setMethodSortFunc(Closure $func = null): void
     {
         $this->navigator->setMethodSortFunc($func);
     }
 
-    public function setPropertySortFunc(\Closure $func = null)
+    public function setPropertySortFunc(Closure $func = null): void
     {
         $this->navigator->setPropertySortFunc($func);
     }

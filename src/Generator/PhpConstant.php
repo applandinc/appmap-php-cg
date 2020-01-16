@@ -2,9 +2,7 @@
 
 namespace CG\Generator;
 
-use CG\Generator\AbstractBuilder;
-
-class PhpConstant extends AbstractBuilder
+class PhpConstant
 {
     private $name;
     private $value;
@@ -14,18 +12,19 @@ class PhpConstant extends AbstractBuilder
         $this->name = $name;
     }
 
-    public static function create(string $name = null) {
+    public static function create(string $name = null): PhpConstant
+    {
         return new self($name);
     }
 
-    public function setName($name)
+    public function setName($name): PhpConstant
     {
         $this->name = $name;
 
         return $this;
     }
 
-    public function setValue($value)
+    public function setValue($value): PhpConstant
     {
         $this->value = $value;
 

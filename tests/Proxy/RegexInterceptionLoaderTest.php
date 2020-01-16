@@ -2,12 +2,11 @@
 
 namespace CG\Tests\Proxy;
 
-use CG\Proxy\RegexInterceptionLoader;
 use PHPUnit\Framework\TestCase;
 
 class RegexInterceptionLoaderTest extends TestCase
 {
-    public function testLoadInterceptors()
+    public function testLoadInterceptors(): void
     {
         $this->assertTrue(true);
     }

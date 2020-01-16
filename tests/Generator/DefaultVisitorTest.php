@@ -14,6 +14,7 @@ use CG\Tests\Generator\Fixture\EntityPhp7;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use ReflectionException;
 
 class DefaultVisitorTest extends TestCase
 {
@@ -87,6 +88,9 @@ DOC
         $this->assertEquals($this->getContent('callable_parameter.php'), $visitor->getContent());
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function testVisitClassWithPhp7Features(): void
     {
         if (PHP_VERSION_ID < 70000) {
@@ -157,7 +161,7 @@ DOC
      * @param string $content
      * @dataProvider startVisitingClassDataProvider
      */
-    public function testStartVisitingClass(PhpClass $class, string $content)
+    public function testStartVisitingClass(PhpClass $class, string $content): void
     {
         $visitor = new DefaultVisitor();
         $visitor->startVisitingClass($class);
@@ -165,59 +169,67 @@ DOC
         $this->assertEquals($content, $visitor->getContent());
     }
 
-    public function startVisitingClassDataProvider()
+    public function startVisitingClassDataProvider(): array
     {
         return [
             [PhpClass::create('Foo')->addInterfaceName('ArrayAccess'), <<<CLASS
 class Foo implements \ArrayAccess
 {
 }
-CLASS],
+CLASS
+            ],
             [PhpClass::create('Foo')->setAbstract(true), <<<CLASS
 abstract class Foo
 {
 }
-CLASS],
+CLASS
+            ],
             [PhpClass::create('Foo')->setFinal(true), <<<CLASS
 final class Foo
 {
 }
-CLASS],
+CLASS
+            ],
             [PhpClass::create('Foo')->addUseStatement("Foo\Bar"), <<<CLASS
 use Foo\Bar;
 
 class Foo
 {
 }
-CLASS],
-            [PhpClass::create('Foo')->addUseStatement("Foo\Bar", "Bar"), <<<CLASS
+CLASS
+            ],
+            [PhpClass::create('Foo')->addUseStatement("Foo\Bar", 'Bar'), <<<CLASS
 use Foo\Bar;
 
 class Foo
 {
 }
-CLASS],
-            [PhpClass::create('Foo')->addUseStatement("Foo\Bar", "Baz"), <<<CLASS
+CLASS
+            ],
+            [PhpClass::create('Foo')->addUseStatement("Foo\Bar", 'Baz'), <<<CLASS
 use Foo\Bar as Baz;
 
 class Foo
 {
 }
-CLASS],
-            [PhpClass::create('Foo')->addRequiredFile("foo.inc.php"), <<<CLASS
+CLASS
+            ],
+            [PhpClass::create('Foo')->addRequiredFile('foo.inc.php'), <<<CLASS
 require_once 'foo.inc.php';
 
 class Foo
 {
 }
-CLASS],
-            [PhpClass::create('Foo')->addRequiredFile(new RelativePath("bar.inc.php")), <<<CLASS
+CLASS
+            ],
+            [PhpClass::create('Foo')->addRequiredFile(new RelativePath('bar.inc.php')), <<<CLASS
 require_once __DIR__ . '/bar.inc.php';
 
 class Foo
 {
 }
-CLASS],
+CLASS
+            ],
         ];
     }
 }

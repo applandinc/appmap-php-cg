@@ -10,7 +10,6 @@ use CG\Proxy\InterceptorLoaderInterface;
 use CG\Proxy\LazyInitializerGenerator;
 use CG\Proxy\LazyInitializerInterface;
 use CG\Tests\Proxy\Fixture\Entity;
-use CG\Tests\Proxy\Fixture\MarkerInterface;
 use CG\Tests\Proxy\Fixture\SimpleClass;
 use CG\Tests\Proxy\Fixture\SluggableInterface;
 use CG\Tests\Proxy\Fixture\TraceInterceptor;
@@ -39,6 +38,7 @@ class EnhancerTest extends TestCase
 
     public function getGenerationTests(): array
     {
+        /** @noinspection ClassConstantCanBeUsedInspection */
         return [
             [SimpleClass::class, 'CG\Tests\Proxy\Fixture\SimpleClass__CG__Enhanced', ['CG\Tests\Proxy\Fixture\MarkerInterface'], []],
             [SimpleClass::class, 'CG\Tests\Proxy\Fixture\SimpleClass__CG__Sluggable', [SluggableInterface::class], []],
@@ -67,8 +67,8 @@ class EnhancerTest extends TestCase
 
         $this->assertEquals('foo', $traceable->getName());
         $this->assertEquals('foo', $traceable->getName());
-        $this->assertEquals(2, count($interceptor1->getLog()));
-        $this->assertEquals(2, count($interceptor2->getLog()));
+        $this->assertCount(2, $interceptor1->getLog());
+        $this->assertCount(2, $interceptor2->getLog());
     }
 
     /**
@@ -91,9 +91,8 @@ class EnhancerTest extends TestCase
     {
         $loader = $this->createMock(InterceptorLoaderInterface::class);
         $loader
-            ->expects($this->any())
             ->method('loadInterceptors')
-            ->will($this->returnValue($interceptors));
+            ->willReturn($interceptors);
 
         return $loader;
     }
@@ -115,9 +114,8 @@ class EnhancerTest extends TestCase
     {
         $namingStrategy = $this->createMock(NamingStrategyInterface::class);
         $namingStrategy
-            ->expects($this->any())
             ->method('getClassName')
-            ->will($this->returnValue($name));
+            ->willReturn($name);
 
         return $namingStrategy;
     }
@@ -125,9 +123,16 @@ class EnhancerTest extends TestCase
 
 class Initializer implements LazyInitializerInterface
 {
-    private Entity $lastObject;
+    /**
+     * @var Entity
+     */
+    private $lastObject;
 
-    public function initializeObject($object)
+    /** @noinspection ReturnTypeCanBeDeclaredInspection
+     * @noinspection PhpUnused
+     * @param $object
+     */
+    public function initializeObject($object): void
     {
         if ($object instanceof Entity) {
             $this->lastObject = $object;

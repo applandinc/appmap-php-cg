@@ -33,9 +33,18 @@ use Closure;
  */
 class DefaultNavigator
 {
-    private ?Closure $constantSortFunc = null;
-    private ?Closure $propertySortFunc = null;
-    private ?Closure $methodSortFunc = null;
+    /**
+     * @var Closure|null
+     */
+    private $constantSortFunc;
+    /**
+     * @var Closure|null
+     */
+    private $propertySortFunc;
+    /**
+     * @var Closure|null
+     */
+    private $methodSortFunc;
 
     /**
      * Sets a custom constant sorting function.
@@ -118,7 +127,7 @@ class DefaultNavigator
             return $this->methodSortFunc;
         }
 
-        return [DefaultNavigator::class, 'defaultMethodSortFunc'];
+        return [__CLASS__, 'defaultMethodSortFunc'];
     }
 
     public static function defaultMethodSortFunc(AbstractPhpMember $a, AbstractPhpMember $b): int
@@ -136,18 +145,26 @@ class DefaultNavigator
             return $this->propertySortFunc;
         }
 
-        return [DefaultNavigator::class, 'defaultPropertySortFunc'];
+        return [__CLASS__, 'defaultPropertySortFunc'];
     }
 
     public static function defaultPropertySortFunc(AbstractPhpMember $a, AbstractPhpMember $b): int
     {
-        if (($aV = $a->getVisibility()) !== $bV = $b->getVisibility()) {
-            $aV = 'public' === $aV ? 3 : ('protected' === $aV ? 2 : 1);
-            $bV = 'public' === $bV ? 3 : ('protected' === $bV ? 2 : 1);
-
-            return $aV > $bV ? -1 : 1;
+        $aScore = self::getMemberSortingScore($a);
+        $bScore = self::getMemberSortingScore($b);
+        if ($aScore !== $bScore) {
+            return $aScore > $bScore ? -1 : 1;
         }
 
         return strcasecmp($b->getName(), $a->getName());
+    }
+
+    public static function getMemberSortingScore(AbstractPhpMember $member): ?int
+    {
+        switch ($member->getVisibility()) {
+            case 'public': return 3;
+            case 'protected': return 2;
+            default: return 1;
+        }
     }
 }
