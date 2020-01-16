@@ -1,3 +1,11 @@
+namespace Foo\Bar;
+
+/**
+ * @param $a
+ * @param $b
+ * @return mixed
+ * @author Michael Skvortsov <demoniac.death@gmail.com>
+ */
 function foo($a, $b)
 {
     if ($a === $b) {

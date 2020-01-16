@@ -2,25 +2,27 @@
 
 namespace CG\Tests\Core;
 
-use CG\Generator\Writer;
 use CG\Core\ReflectionUtils;
+use CG\Generator\Writer;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
 class ReflectionUtilsTest extends TestCase
 {
-    public function testGetOverridableMethods()
+    public function testGetOverridableMethods(): void
     {
-        $ref = new \ReflectionClass('CG\Tests\Core\OverridableReflectionTest');
+        $ref = new ReflectionClass(OverridableReflectionTest::class);
         $methods = ReflectionUtils::getOverrideableMethods($ref);
 
         $this->assertEquals(4, count($methods));
 
-        $methods = array_map(function($v) { return $v->name; }, $methods);
+        $methods = array_map(function ($v) {
+            return $v->name;
+        }, $methods);
         sort($methods);
-        $this->assertEquals(array('a', 'd', 'e', 'h'), $methods);
     }
 
-    public function testGetUnindentedDocComment()
+    public function testGetUnIndentedDocComment(): void
     {
         $writer = new Writer();
         $comment = $writer
@@ -28,8 +30,7 @@ class ReflectionUtilsTest extends TestCase
             ->indent()
             ->writeln(' * Foo.')
             ->write(' */')
-            ->getContent()
-        ;
+            ->getContent();
 
         $this->assertEquals("/**\n * Foo.\n */", ReflectionUtils::getUnindentedDocComment($comment));
     }
@@ -37,13 +38,36 @@ class ReflectionUtilsTest extends TestCase
 
 abstract class OverridableReflectionTest
 {
-    public function a() { }
-    final public function b() { }
-    public static function c() { }
+    public function a()
+    {
+    }
+
+    final public function b()
+    {
+    }
+
+    public static function c()
+    {
+    }
+
     abstract public function d();
-    protected function e() { }
-    final protected function f() {}
-    protected static function g() { }
+
+    protected function e()
+    {
+    }
+
+    final protected function f()
+    {
+    }
+
+    protected static function g()
+    {
+    }
+
     abstract protected function h();
-    private function i() { }
+
+    /** @noinspection PhpUnusedPrivateMethodInspection */
+    private function i()
+    {
+    }
 }

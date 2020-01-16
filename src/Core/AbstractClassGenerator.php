@@ -19,6 +19,7 @@
 namespace CG\Core;
 
 use CG\Generator\PhpClass;
+use ReflectionClass;
 
 /**
  * Abstract base class for all class generators.
@@ -27,23 +28,24 @@ use CG\Generator\PhpClass;
  */
 abstract class AbstractClassGenerator implements ClassGeneratorInterface
 {
-    private $namingStrategy;
-    private $generatorStrategy;
+    private ?NamingStrategyInterface $namingStrategy = null;
+    private ?GeneratorStrategyInterface $generatorStrategy = null;
 
-    public function setNamingStrategy(NamingStrategyInterface $namingStrategy = null)
+    public function setNamingStrategy(NamingStrategyInterface $namingStrategy): void
     {
         $this->namingStrategy = $namingStrategy;
     }
 
-    public function setGeneratorStrategy(GeneratorStrategyInterface $generatorStrategy = null)
+    public function setGeneratorStrategy(GeneratorStrategyInterface $generatorStrategy): void
     {
         $this->generatorStrategy = $generatorStrategy;
     }
 
     /**
+     * @param ReflectionClass $class
      * @return string
      */
-    public function getClassName(\ReflectionClass $class)
+    public function getClassName(ReflectionClass $class): string
     {
         if (null === $this->namingStrategy) {
             $this->namingStrategy = new DefaultNamingStrategy();
@@ -52,7 +54,7 @@ abstract class AbstractClassGenerator implements ClassGeneratorInterface
         return $this->namingStrategy->getClassName($class);
     }
 
-    protected function generateCode(PhpClass $class)
+    protected function generateCode(PhpClass $class): string
     {
         if (null === $this->generatorStrategy) {
             $this->generatorStrategy = new DefaultGeneratorStrategy();

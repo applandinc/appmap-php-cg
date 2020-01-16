@@ -7,9 +7,9 @@ use CG\Proxy\MethodInterceptorInterface;
 
 class TraceInterceptor implements MethodInterceptorInterface
 {
-    private $log;
+    private array $log;
 
-    public function getLog()
+    public function getLog(): array
     {
         return $this->log;
     }
@@ -18,7 +18,7 @@ class TraceInterceptor implements MethodInterceptorInterface
     {
         $message = sprintf('%s::%s(', $method->reflection->class, $method->reflection->name);
 
-        $logArgs = array();
+        $logArgs = [];
         foreach ($method->arguments as $arg) {
             $logArgs[] = var_export($arg, true);
         }

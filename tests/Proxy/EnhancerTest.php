@@ -2,51 +2,68 @@
 
 namespace CG\Tests\Proxy;
 
-use CG\Proxy\LazyInitializerInterface;
-use CG\Proxy\InterceptionGenerator;
-use CG\Proxy\LazyInitializerGenerator;
+use CG\Core\DefaultGeneratorStrategy;
+use CG\Core\NamingStrategyInterface;
 use CG\Proxy\Enhancer;
+use CG\Proxy\InterceptionGenerator;
+use CG\Proxy\InterceptorLoaderInterface;
+use CG\Proxy\LazyInitializerGenerator;
+use CG\Proxy\LazyInitializerInterface;
 use CG\Tests\Proxy\Fixture\Entity;
+use CG\Tests\Proxy\Fixture\MarkerInterface;
+use CG\Tests\Proxy\Fixture\SimpleClass;
+use CG\Tests\Proxy\Fixture\SluggableInterface;
 use CG\Tests\Proxy\Fixture\TraceInterceptor;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
+use ReflectionException;
 
 class EnhancerTest extends TestCase
 {
     /**
      * @dataProvider getGenerationTests
+     * @param $class
+     * @param $generatedClass
+     * @param array $interfaces
+     * @param array $generators
+     * @throws ReflectionException
      */
-    public function testGenerateClass($class, $generatedClass, array $interfaces, array $generators)
+    public function testGenerateClass($class, $generatedClass, array $interfaces, array $generators): void
     {
-        $enhancer = new Enhancer(new \ReflectionClass($class), $interfaces, $generators);
+        $enhancer = new Enhancer(new ReflectionClass($class), $interfaces, $generators);
         $enhancer->setNamingStrategy($this->getNamingStrategy($generatedClass));
+        $enhancer->setGeneratorStrategy(new DefaultGeneratorStrategy());
 
         $this->assertEquals($this->getContent(substr($generatedClass, strrpos($generatedClass, '\\') + 1)), $enhancer->generateClass());
     }
 
-    public function getGenerationTests()
+    public function getGenerationTests(): array
     {
-        return array(
-            array('CG\Tests\Proxy\Fixture\SimpleClass', 'CG\Tests\Proxy\Fixture\SimpleClass__CG__Enhanced', array('CG\Tests\Proxy\Fixture\MarkerInterface'), array()),
-            array('CG\Tests\Proxy\Fixture\SimpleClass', 'CG\Tests\Proxy\Fixture\SimpleClass__CG__Sluggable', array('CG\Tests\Proxy\Fixture\SluggableInterface'), array()),
-            array(Entity::class, 'CG\Tests\Proxy\Fixture\Entity__CG__LazyInitializing', array(), array(
+        return [
+            [SimpleClass::class, 'CG\Tests\Proxy\Fixture\SimpleClass__CG__Enhanced', ['CG\Tests\Proxy\Fixture\MarkerInterface'], []],
+            [SimpleClass::class, 'CG\Tests\Proxy\Fixture\SimpleClass__CG__Sluggable', [SluggableInterface::class], []],
+            [Entity::class, 'CG\Tests\Proxy\Fixture\Entity__CG__LazyInitializing', [], [
                 new LazyInitializerGenerator(),
-            ))
-        );
+            ]]
+        ];
     }
 
-    public function testInterceptionGenerator()
+    /**
+     * @throws ReflectionException
+     */
+    public function testInterceptionGenerator(): void
     {
-        $enhancer = new Enhancer(new \ReflectionClass(Entity::class), array(), array(
+        $enhancer = new Enhancer(new ReflectionClass(Entity::class), [], [
             $generator = new InterceptionGenerator()
-        ));
-        $enhancer->setNamingStrategy($this->getNamingStrategy('CG\Tests\Proxy\Fixture\Entity__CG__Traceable_'.sha1(microtime(true))));
+        ]);
+        $enhancer->setNamingStrategy($this->getNamingStrategy('CG\Tests\Proxy\Fixture\Entity__CG__Traceable_' . sha1(microtime(true))));
         $generator->setPrefix('');
 
         $traceable = $enhancer->createInstance();
-        $traceable->setLoader($this->getLoader(array(
+        $traceable->setLoader($this->getLoader([
             $interceptor1 = new TraceInterceptor(),
             $interceptor2 = new TraceInterceptor(),
-        )));
+        ]));
 
         $this->assertEquals('foo', $traceable->getName());
         $this->assertEquals('foo', $traceable->getName());
@@ -54,11 +71,14 @@ class EnhancerTest extends TestCase
         $this->assertEquals(2, count($interceptor2->getLog()));
     }
 
-    public function testLazyInitializerGenerator()
+    /**
+     * @throws ReflectionException
+     */
+    public function testLazyInitializerGenerator(): void
     {
-        $enhancer = new Enhancer(new \ReflectionClass(Entity::class), array(), array(
+        $enhancer = new Enhancer(new ReflectionClass(Entity::class), [], [
             $generator = new LazyInitializerGenerator(),
-        ));
+        ]);
         $generator->setPrefix('');
 
         $entity = $enhancer->createInstance();
@@ -67,38 +87,37 @@ class EnhancerTest extends TestCase
         $this->assertSame($entity, $initializer->getLastObject());
     }
 
-    private function getLoader(array $interceptors)
+    private function getLoader(array $interceptors): InterceptorLoaderInterface
     {
-        $loader = $this->createMock('CG\Proxy\InterceptorLoaderInterface');
+        $loader = $this->createMock(InterceptorLoaderInterface::class);
         $loader
             ->expects($this->any())
             ->method('loadInterceptors')
-            ->will($this->returnValue($interceptors))
-        ;
+            ->will($this->returnValue($interceptors));
 
         return $loader;
     }
 
     /**
      * @param string $file
+     * @return string
      */
-    private function getContent($file)
+    private function getContent($file): ?string
     {
-        return file_get_contents(__DIR__.'/Fixture/generated/'.$file.'.php.gen');
+        return file_get_contents(__DIR__ . '/Fixture/generated/' . $file . '.php.gen') ?: null;
     }
 
     /**
      * @param string $name
-     * @return null|\CG\Core\NamingStrategyInterface
+     * @return NamingStrategyInterface
      */
-    private function getNamingStrategy($name)
+    private function getNamingStrategy($name): NamingStrategyInterface
     {
-        $namingStrategy = $this->createMock('CG\Core\NamingStrategyInterface');
+        $namingStrategy = $this->createMock(NamingStrategyInterface::class);
         $namingStrategy
             ->expects($this->any())
             ->method('getClassName')
-            ->will($this->returnValue($name))
-        ;
+            ->will($this->returnValue($name));
 
         return $namingStrategy;
     }
@@ -106,14 +125,16 @@ class EnhancerTest extends TestCase
 
 class Initializer implements LazyInitializerInterface
 {
-    private $lastObject;
+    private Entity $lastObject;
 
     public function initializeObject($object)
     {
-        $this->lastObject = $object;
+        if ($object instanceof Entity) {
+            $this->lastObject = $object;
+        }
     }
 
-    public function getLastObject()
+    public function getLastObject(): Entity
     {
         return $this->lastObject;
     }

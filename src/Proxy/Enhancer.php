@@ -18,11 +18,14 @@
 
 namespace CG\Proxy;
 
-use CG\Core\NamingStrategyInterface;
-use CG\Generator\Writer;
-use CG\Generator\PhpMethod;
-use CG\Generator\PhpClass;
 use CG\Core\AbstractClassGenerator;
+use CG\Core\NamingStrategyInterface;
+use CG\Generator\PhpClass;
+use CG\Generator\PhpMethod;
+use CG\Generator\Writer;
+use ReflectionClass;
+use ReflectionException;
+use RuntimeException;
 
 /**
  * Class enhancing generator implementation.
@@ -37,15 +40,21 @@ use CG\Core\AbstractClassGenerator;
  */
 class Enhancer extends AbstractClassGenerator
 {
-    private $generatedClass;
-    private $class;
-    private $interfaces;
-    private $generators;
+    private PhpClass $generatedClass;
+    private ReflectionClass $class;
+    /**
+     * @var array|string[]
+     */
+    private array $interfaces;
+    /**
+     * @var array|InterceptionGenerator[]
+     */
+    private array $generators;
 
-    public function __construct(\ReflectionClass $class, array $interfaces = array(), array $generators = array())
+    public function __construct(ReflectionClass $class, array $interfaces = [], array $generators = [])
     {
         if (empty($generators) && empty($interfaces)) {
-            throw new \RuntimeException('Either generators, or interfaces must be given.');
+            throw new RuntimeException('Either generators, or interfaces must be given.');
         }
 
         $this->class = $class;
@@ -56,10 +65,11 @@ class Enhancer extends AbstractClassGenerator
     /**
      * Creates a new instance  of the enhanced class.
      *
-     * @param  array  $args
+     * @param array $args
      * @return object
+     * @throws ReflectionException
      */
-    public function createInstance(array $args = array())
+    public function createInstance(array $args = [])
     {
         $generatedClass = $this->getClassName($this->class);
 
@@ -67,32 +77,37 @@ class Enhancer extends AbstractClassGenerator
             eval($this->generateClass());
         }
 
-        $ref = new \ReflectionClass($generatedClass);
+        $ref = new ReflectionClass($generatedClass);
 
         return $ref->newInstanceArgs($args);
     }
 
-    public function writeClass($filename)
+    /**
+     * @param $filename
+     * @throws ReflectionException
+     */
+    public function writeClass($filename): void
     {
         if (!is_dir($dir = dirname($filename))) {
             if (false === @mkdir($dir, 0777, true)) {
-                throw new \RuntimeException(sprintf('Could not create directory "%s".', $dir));
+                throw new RuntimeException(sprintf('Could not create directory "%s".', $dir));
             }
         }
 
         if (!is_writable($dir)) {
-            throw new \RuntimeException(sprintf('The directory "%s" is not writable.', $dir));
+            throw new RuntimeException(sprintf('The directory "%s" is not writable.', $dir));
         }
 
-        file_put_contents($filename, "<?php\n\n".$this->generateClass());
+        file_put_contents($filename, "<?php\n\n" . $this->generateClass());
     }
 
     /**
      * Creates a new enhanced class
      *
      * @return string
+     * @throws ReflectionException
      */
-    final public function generateClass()
+    final public function generateClass(): string
     {
         static $docBlock;
         if (empty($docBlock)) {
@@ -103,24 +118,24 @@ class Enhancer extends AbstractClassGenerator
                 ->writeln(' *')
                 ->writeln(' * This code was generated automatically by the CG library, manual changes to it')
                 ->writeln(' * will be lost upon next generation.')
-                ->write(' */')
-            ;
+                ->write(' */');
             $docBlock = $writer->getContent();
         }
 
         $this->generatedClass = PhpClass::create()
             ->setDocblock($docBlock)
-            ->setParentClassName($this->class->name)
-        ;
+            ->setParentClassName($this->class->name);
 
         $proxyClassName = $this->getClassName($this->class);
         if (false === strpos($proxyClassName, NamingStrategyInterface::SEPARATOR)) {
-            throw new \RuntimeException(sprintf('The proxy class name must be suffixed with "%s" and an optional string, but got "%s".', NamingStrategyInterface::SEPARATOR, $proxyClassName));
+            throw new RuntimeException(sprintf('The proxy class name must be suffixed with "%s" and an optional string, but got "%s".', NamingStrategyInterface::SEPARATOR, $proxyClassName));
         }
         $this->generatedClass->setName($proxyClassName);
 
         if (!empty($this->interfaces)) {
-            $this->generatedClass->setInterfaceNames(array_map(function($v) { return '\\'.$v; }, $this->interfaces));
+            $this->generatedClass->setInterfaceNames(array_map(function ($v) {
+                return '\\' . $v;
+            }, $this->interfaces));
 
             foreach ($this->getInterfaceMethods() as $method) {
                 $method = PhpMethod::fromReflection($method);
@@ -141,13 +156,14 @@ class Enhancer extends AbstractClassGenerator
 
     /**
      * Adds stub methods for the interfaces that have been implemented.
+     * @throws ReflectionException
      */
-    protected function getInterfaceMethods()
+    protected function getInterfaceMethods(): array
     {
-        $methods = array();
+        $methods = [];
 
         foreach ($this->interfaces as $interface) {
-            $ref = new \ReflectionClass($interface);
+            $ref = new ReflectionClass($interface);
             $methods = array_merge($methods, $ref->getMethods());
         }
 

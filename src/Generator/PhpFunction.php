@@ -29,7 +29,7 @@ class PhpFunction extends AbstractBuilder
 {
     private $name;
     private $namespace;
-    private $parameters = array();
+    private $parameters = [];
     private $body = '';
     private $referenceReturned = false;
     private $docblock;

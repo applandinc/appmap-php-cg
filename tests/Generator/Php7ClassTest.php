@@ -2,37 +2,40 @@
 
 namespace CG\Tests\Generator;
 
-use CG\Generator\PhpProperty;
-use CG\Generator\PhpParameter;
-use CG\Generator\PhpMethod;
 use CG\Generator\PhpClass;
+use CG\Generator\PhpMethod;
+use CG\Generator\PhpParameter;
+use CG\Generator\PhpProperty;
+use CG\Tests\Generator\Fixture\EntityPhp7;
+use CG\Tests\Generator\Fixture\SubFixture\Bar;
+use CG\Tests\Generator\Fixture\SubFixture\Baz;
+use CG\Tests\Generator\Fixture\SubFixture\Foo;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
 class Php7ClassTest extends TestCase
 {
     public function testFromReflection()
     {
         if (PHP_VERSION_ID < 70000) {
-           $this->markTestSkipped("Test is only valid for PHP >=7");
+            $this->markTestSkipped("Test is only valid for PHP >=7");
         }
-        $class = new PhpClass();
+        $class = new PhpClass(EntityPhp7::class);
         $class
-            ->setName('CG\Tests\Generator\Fixture\EntityPhp7')
             ->setDocblock('/**
  * Doc Comment.
  *
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */')
-             ->setProperty(PhpProperty::create('id')
-                 ->setVisibility('private')
-                 ->setDefaultValue(0)
-                 ->setDocblock('/**
+            ->setProperty(PhpProperty::create('id')
+                ->setVisibility('private')
+                ->setDefaultValue(0)
+                ->setDocblock('/**
  * @var integer
  */')
-             );
+            );
 
-        $class->setMethod(PhpMethod::create()
-            ->setName('getId')
+        $class->setMethod(PhpMethod::create('getId')
             ->setDocblock('/**
  * @return int
  */')
@@ -40,78 +43,76 @@ class Php7ClassTest extends TestCase
             ->setReturnType('int')
         );
 
-        $class->setMethod(PhpMethod::create()
-            ->setName('setId')
+        $class->setMethod(PhpMethod::create('setId')
             ->setVisibility('public')
             ->setDocBlock('/**
  * @param int $id
  * @return EntityPhp7
  */')
-            ->addParameter(PhpParameter::create()
-                    ->setName('id')
-                    ->setType('int')
-                    ->setDefaultValue(null)
+            ->addParameter(PhpParameter::create('id')
+                ->setType('int')
+                ->setDefaultValue(null)
             )
             ->setReturnType('self')
         );
 
-        $class->setMethod(PhpMethod::create()
-            ->setName('getTime')
+        $class->setMethod(PhpMethod::create('getTime')
             ->setVisibility('public')
             ->setReturnType('DateTime')
         );
 
-        $class->setMethod(PhpMethod::create()
-            ->setName('getTimeZone')
+        $class->setMethod(PhpMethod::create('getTimeZone')
             ->setVisibility('public')
             ->setReturnType('DateTimeZone')
         );
 
-        $class->setMethod(PhpMethod::create()
-            ->setName('setTime')
+        $class->setMethod(PhpMethod::create('setTime')
             ->setVisibility('public')
-            ->addParameter(PhpParameter::create()
-                ->setName('time')
+            ->setReturnType('void')
+            ->addParameter(PhpParameter::create('time')
                 ->setType('DateTime')
             )
         );
 
-        $class->setMethod(PhpMethod::create()
-            ->setName('setTimeZone')
+        $class->setMethod(PhpMethod::create('setTimeZone')
             ->setVisibility('public')
-            ->addParameter(PhpParameter::create()
-                ->setName('timezone')
+            ->addParameter(PhpParameter::create('timezone')
                 ->setType('DateTimeZone')
             )
         );
 
-        $class->setMethod(PhpMethod::create()
-            ->setName('setArray')
+        $class->setMethod(PhpMethod::create('setArray')
             ->setVisibility('public')
             ->setReturnType('array')
-            ->addParameter(PhpParameter::create()
-                ->setName('array')
+            ->addParameter(PhpParameter::create('array')
                 ->setDefaultValue(null)
                 ->setPassedByReference(true)
                 ->setType('array')
             )
         );
 
-        $class->setMethod(PhpMethod::create()
-            ->setName('getFoo')
-            ->setReturnType('CG\Tests\Generator\Fixture\SubFixture\Foo')
+        $class->setMethod(PhpMethod::create('setArrayWithDefault')
+            ->setVisibility('public')
+            ->setReturnType('array')
+            ->addParameter(PhpParameter::create('array')
+                ->setDefaultValue([])
+                ->setType('array')
+            )
         );
 
-        $class->setMethod(PhpMethod::create()
-            ->setName('getBar')
-            ->setReturnType('CG\Tests\Generator\Fixture\SubFixture\Bar')
+        $class->setMethod(PhpMethod::create('getFoo')
+            ->setReturnType(Foo::class, true)
         );
 
-        $class->setMethod(PhpMethod::create()
-            ->setName('getBaz')
-            ->setReturnType('CG\Tests\Generator\Fixture\SubFixture\Baz')
+        $class->setMethod(PhpMethod::create('getBar')
+            ->setReturnType(Bar::class)
         );
 
-        $this->assertEquals($class, PhpClass::fromReflection(new \ReflectionClass('CG\Tests\Generator\Fixture\EntityPhp7')));
+        $class->setMethod(PhpMethod::create('getBaz')
+            ->setReturnType(Baz::class)
+        );
+
+
+        $this->assertEquals($class, PhpClass::fromReflection(new ReflectionClass(EntityPhp7::class)));
     }
 }

@@ -28,16 +28,14 @@ use CG\Core\ReflectionUtils;
  */
 class PhpClass extends AbstractBuilder
 {
-    private static $phpParser;
-
     private $name;
     private $parentClassName;
-    private $interfaceNames = array();
-    private $useStatements = array();
-    private $constants = array();
-    private $properties = array();
-    private $requiredFiles = array();
-    private $methods = array();
+    private $interfaceNames = [];
+    private $useStatements = [];
+    private $constants = [];
+    private $properties = [];
+    private $requiredFiles = [];
+    private $methods = [];
     private $abstract = false;
     private $final = false;
     private $docblock;
@@ -56,18 +54,6 @@ class PhpClass extends AbstractBuilder
             ->setFinal($ref->isFinal())
             ->setConstants($ref->getConstants())
         ;
-
-        if (null === self::$phpParser) {
-            if (!class_exists('Doctrine\Common\Annotations\PhpParser')) {
-                self::$phpParser = false;
-            } else {
-                self::$phpParser = new PhpParser();
-            }
-        }
-
-        if (false !== self::$phpParser) {
-            $class->setUseStatements(self::$phpParser->parseClass($ref));
-        }
 
         if ($docComment = $ref->getDocComment()) {
             $class->setDocblock(ReflectionUtils::getUnindentedDocComment($docComment));
@@ -188,7 +174,7 @@ class PhpClass extends AbstractBuilder
 
     public function setConstants(array $constants)
     {
-        $normalizedConstants = array();
+        $normalizedConstants = [];
         foreach ($constants as $name => $value) {
             if ( ! $value instanceof PhpConstant) {
                 $constValue = $value;
@@ -248,7 +234,7 @@ class PhpClass extends AbstractBuilder
     public function getConstant($name)
     {
         if ( ! isset($this->constants[$name])) {
-            throw new \InvalidArgumentException(sprintf('The constant "%s" does not exist.'));
+            throw new \InvalidArgumentException(sprintf('The constant "%s" does not exist.', $name));
         }
 
         return $this->constants[$name];
@@ -285,24 +271,16 @@ class PhpClass extends AbstractBuilder
     /**
      * @param string $property
      */
-    public function hasProperty($property)
+    public function hasProperty(string $property): bool
     {
-        if ($property instanceof PhpProperty) {
-            $property = $property->getName();
-        }
-
         return isset($this->properties[$property]);
     }
 
     /**
      * @param string $property
      */
-    public function removeProperty($property)
+    public function removeProperty(string $property)
     {
-        if ($property instanceof PhpProperty) {
-            $property = $property->getName();
-        }
-
         if (!array_key_exists($property, $this->properties)) {
             throw new \InvalidArgumentException(sprintf('The property "%s" does not exist.', $property));
         }
@@ -339,10 +317,6 @@ class PhpClass extends AbstractBuilder
      */
     public function hasMethod($method)
     {
-        if ($method instanceof PhpMethod) {
-            $method = $method->getName();
-        }
-
         return isset($this->methods[$method]);
     }
 
@@ -351,10 +325,6 @@ class PhpClass extends AbstractBuilder
      */
     public function removeMethod($method)
     {
-        if ($method instanceof PhpMethod) {
-            $method = $method->getName();
-        }
-
         if (!array_key_exists($method, $this->methods)) {
             throw new \InvalidArgumentException(sprintf('The method "%s" does not exist.', $method));
         }

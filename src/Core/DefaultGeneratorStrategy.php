@@ -57,7 +57,7 @@ class DefaultGeneratorStrategy implements GeneratorStrategyInterface
         $this->navigator->setPropertySortFunc($func);
     }
 
-    public function generate(PhpClass $class)
+    public function generate(PhpClass $class): string
     {
         $this->visitor->reset();
         $this->navigator->accept($this->visitor, $class);

@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 class PhpParameterTest extends TestCase
 {
-    public function testSetGetName()
+    public function testSetGetName(): void
     {
         $param = new PhpParameter();
 
@@ -16,7 +16,7 @@ class PhpParameterTest extends TestCase
         $this->assertEquals('foo', $param->getName());
     }
 
-    public function testSetGetDefaultValue()
+    public function testSetGetDefaultValue(): void
     {
         $param = new PhpParameter();
 
@@ -30,7 +30,7 @@ class PhpParameterTest extends TestCase
         $this->assertFalse($param->hasDefaultValue());
     }
 
-    public function testSetIsPassedByReference()
+    public function testSetIsPassedByReference(): void
     {
         $param = new PhpParameter();
 
@@ -41,7 +41,7 @@ class PhpParameterTest extends TestCase
         $this->assertFalse($param->isPassedByReference());
     }
 
-    public function testSetGetType()
+    public function testSetGetType(): void
     {
         $param = new PhpParameter();
 

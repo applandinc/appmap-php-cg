@@ -96,17 +96,17 @@ class InterceptionGenerator implements GeneratorInterface
 
         $interceptorCode =
             '$ref = new \ReflectionMethod(%s, %s);'."\n"
-            .'$interceptors = $this->'.$this->prefix.'loader->loadInterceptors($ref, $this, array(%s));'."\n"
-            .'$invocation = new \CG\Proxy\MethodInvocation($ref, $this, array(%s), $interceptors);'."\n\n"
+            .'$interceptors = $this->'.$this->prefix.'loader->loadInterceptors($ref, $this, [%s]);'."\n"
+            .'$invocation = new \CG\Proxy\MethodInvocation($ref, $this, [%s], $interceptors);'."\n\n"
         ;
 
-        $voidReturns = array(
+        $voidReturns = [
             true => '$invocation->proceed();',
             false => 'return $invocation->proceed();'
-        );
+        ];
 
         foreach ($methods as $method) {
-            $params = array();
+            $params = [];
             foreach ($method->getParameters() as $param) {
                 $params[] = '$'.$param->name;
             }

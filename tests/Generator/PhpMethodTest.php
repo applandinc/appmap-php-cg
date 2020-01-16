@@ -2,13 +2,15 @@
 
 namespace CG\Tests\Generator;
 
-use CG\Generator\PhpParameter;
 use CG\Generator\PhpMethod;
+use CG\Generator\PhpParameter;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
+use ReflectionException;
 
 class PhpMethodTest extends TestCase
 {
-    public function testSetIsFinal()
+    public function testSetIsFinal(): void
     {
         $method = new PhpMethod();
 
@@ -19,7 +21,7 @@ class PhpMethodTest extends TestCase
         $this->assertFalse($method->isFinal());
     }
 
-    public function testSetIsAbstract()
+    public function testSetIsAbstract(): void
     {
         $method = new PhpMethod();
 
@@ -30,12 +32,12 @@ class PhpMethodTest extends TestCase
         $this->assertFalse($method->isAbstract());
     }
 
-    public function testSetGetParameters()
+    public function testSetGetParameters(): void
     {
         $method = new PhpMethod();
 
-        $this->assertEquals(array(), $method->getParameters());
-        $this->assertSame($method, $method->setParameters($params = array(new PhpParameter())));
+        $this->assertEquals([], $method->getParameters());
+        $this->assertSame($method, $method->setParameters($params = [new PhpParameter()]));
         $this->assertSame($params, $method->getParameters());
 
         $this->assertSame($method, $method->addParameter($param = new PhpParameter()));
@@ -44,7 +46,7 @@ class PhpMethodTest extends TestCase
 
         $this->assertSame($method, $method->removeParameter(0));
         unset($params[0]);
-        $this->assertSame(array($param), $method->getParameters());
+        $this->assertSame([$param], $method->getParameters());
 
         $this->assertSame($method, $method->addParameter($param = new PhpParameter()));
         $params[] = $param;
@@ -52,7 +54,7 @@ class PhpMethodTest extends TestCase
         $this->assertSame($params, $method->getParameters());
     }
 
-    public function testSetGetBody()
+    public function testSetGetBody(): void
     {
         $method = new PhpMethod();
 
@@ -61,7 +63,7 @@ class PhpMethodTest extends TestCase
         $this->assertEquals('foo', $method->getBody());
     }
 
-    public function testSetIsReferenceReturned()
+    public function testSetIsReferenceReturned(): void
     {
         $method = new PhpMethod();
 
@@ -70,5 +72,23 @@ class PhpMethodTest extends TestCase
         $this->assertTrue($method->isReferenceReturned());
         $this->assertSame($method, $method->setReferenceReturned(false));
         $this->assertFalse($method->isReferenceReturned());
+    }
+
+    /**
+     * @throws ReflectionException
+     */
+    public function testFromReflectionReturnTypeAllowsNull(): void
+    {
+        $reflectionClass = new ReflectionClass(FooBar::class);
+        $method = PhpMethod::fromReflection($reflectionClass->getMethod('foo'));
+        $this->assertTrue($method->isNullAllowedForReturnType());
+    }
+}
+
+class FooBar
+{
+    public function foo(): ?bool
+    {
+        return null;
     }
 }

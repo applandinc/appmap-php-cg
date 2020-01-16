@@ -14,6 +14,10 @@ class PhpConstant extends AbstractBuilder
         $this->name = $name;
     }
 
+    public static function create(string $name = null) {
+        return new self($name);
+    }
+
     public function setName($name)
     {
         $this->name = $name;

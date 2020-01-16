@@ -4,16 +4,20 @@ namespace CG\Tests\Generator;
 
 use CG\Core\DefaultGeneratorStrategy;
 use CG\Generator\DefaultVisitor;
+use CG\Generator\PhpClass;
+use CG\Generator\PhpFunction;
 use CG\Generator\PhpMethod;
 use CG\Generator\PhpParameter;
-use CG\Generator\PhpClass;
+use CG\Generator\RelativePath;
 use CG\Generator\Writer;
-use CG\Generator\PhpFunction;
+use CG\Tests\Generator\Fixture\EntityPhp7;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
 class DefaultVisitorTest extends TestCase
 {
-    public function testVisitFunction()
+    public function testVisitFunction(): void
     {
         $writer = new Writer();
 
@@ -32,7 +36,16 @@ class DefaultVisitorTest extends TestCase
                     ->write('return $b;')
                     ->getContent()
             )
-        ;
+            ->setDocblock(<<<DOC
+/**
+ * @param \$a
+ * @param \$b
+ * @return mixed
+ * @author Michael Skvortsov <demoniac.death@gmail.com>
+ */
+DOC
+            )
+            ->setNamespace("Foo\Bar");
 
         $visitor = new DefaultVisitor();
         $visitor->visitFunction($function);
@@ -40,26 +53,27 @@ class DefaultVisitorTest extends TestCase
         $this->assertEquals($this->getContent('a_b_function.php'), $visitor->getContent());
     }
 
-    public function testVisitMethod()
+    public function testVisitMethod(): void
     {
-        $method  = new PhpMethod();
+        $method = new PhpMethod();
         $visitor = new DefaultVisitor();
 
         $method
             ->setName('foo')
-            ->setReferenceReturned(true);
+            ->setReferenceReturned(true)
+            ->setAbstract(true);
         $visitor->visitMethod($method);
 
         $this->assertEquals($this->getContent('reference_returned_method.php'), $visitor->getContent());
     }
 
-    public function testVisitMethodWithCallable()
+    public function testVisitMethodWithCallable(): void
     {
         if (PHP_VERSION_ID < 50400) {
             $this->markTestSkipped('`callable` is only supported in PHP >=5.4.0');
         }
 
-        $method    = new PhpMethod();
+        $method = new PhpMethod();
         $parameter = new PhpParameter('bar');
         $parameter->setType('callable');
 
@@ -73,13 +87,13 @@ class DefaultVisitorTest extends TestCase
         $this->assertEquals($this->getContent('callable_parameter.php'), $visitor->getContent());
     }
 
-    public function testVisitClassWithPhp7Features()
+    public function testVisitClassWithPhp7Features(): void
     {
         if (PHP_VERSION_ID < 70000) {
             $this->markTestSkipped('Test only valid for PHP >=7.0');
         }
 
-        $ref = new \ReflectionClass('CG\Tests\Generator\Fixture\EntityPhp7');
+        $ref = new ReflectionClass(EntityPhp7::class);
         $class = PhpClass::fromReflection($ref);
 
         $generator = new DefaultGeneratorStrategy();
@@ -92,8 +106,10 @@ class DefaultVisitorTest extends TestCase
 
     /**
      * @dataProvider visitFunctionWithPhp7FeaturesDataProvider
+     * @param $filename
+     * @param $function
      */
-    public function testVisitFunctionWithPhp7Features($filename, $function)
+    public function testVisitFunctionWithPhp7Features($filename, $function): void
     {
         if (PHP_VERSION_ID < 70000) {
             $this->markTestSkipped('Test only valid for PHP >=7.0');
@@ -102,33 +118,106 @@ class DefaultVisitorTest extends TestCase
         $visitor = new DefaultVisitor();
         $visitor->visitFunction($function);
 
-        $this->assertEquals($this->getContent($filename.'.php'), $visitor->getContent());
+        $this->assertEquals($this->getContent($filename . '.php'), $visitor->getContent());
 
     }
 
-    public function visitFunctionWithPhp7FeaturesDataProvider()
+    public function visitFunctionWithPhp7FeaturesDataProvider(): array
     {
         $builtinReturn = PhpFunction::create('foo')
-                            ->setReturnType('bool');
-        $nonbuiltinReturn = PhpFunction::create('foo')
-                            ->setReturnType('\Foo');
+            ->setReturnType('bool');
+        $nonBuiltinReturn = PhpFunction::create('foo')
+            ->setReturnType('\Foo');
+        $nonBuiltinReturnUnescaped = PhpFunction::create('foo')
+            ->setReturnType('Foo');
 
 
-        return array(
-            array('php7_builtin_return', $builtinReturn),
-            array('php7_func_nonbuiltin_return', $nonbuiltinReturn),
-        );
+        return [
+            ['php7_builtin_return', $builtinReturn],
+            ['php7_func_non_builtin_return', $nonBuiltinReturn],
+            ['php7_func_non_builtin_return', $nonBuiltinReturnUnescaped],
+        ];
     }
 
     /**
      * @param string $filename
+     * @return string|null
      */
-    private function getContent($filename)
+    private function getContent($filename): ?string
     {
-        if (!is_file($path = __DIR__.'/Fixture/generated/'.$filename)) {
-            throw new \InvalidArgumentException(sprintf('The file "%s" does not exist.', $path));
+        if (!is_file($path = __DIR__ . '/Fixture/generated/' . $filename)) {
+            throw new InvalidArgumentException(sprintf('The file "%s" does not exist.', $path));
         }
 
-        return file_get_contents($path);
+        return file_get_contents($path) ?: null;
+    }
+
+    /**
+     * @param PhpClass $class
+     * @param string $content
+     * @dataProvider startVisitingClassDataProvider
+     */
+    public function testStartVisitingClass(PhpClass $class, string $content)
+    {
+        $visitor = new DefaultVisitor();
+        $visitor->startVisitingClass($class);
+        $visitor->endVisitingClass($class);
+        $this->assertEquals($content, $visitor->getContent());
+    }
+
+    public function startVisitingClassDataProvider()
+    {
+        return [
+            [PhpClass::create('Foo')->addInterfaceName('ArrayAccess'), <<<CLASS
+class Foo implements \ArrayAccess
+{
+}
+CLASS],
+            [PhpClass::create('Foo')->setAbstract(true), <<<CLASS
+abstract class Foo
+{
+}
+CLASS],
+            [PhpClass::create('Foo')->setFinal(true), <<<CLASS
+final class Foo
+{
+}
+CLASS],
+            [PhpClass::create('Foo')->addUseStatement("Foo\Bar"), <<<CLASS
+use Foo\Bar;
+
+class Foo
+{
+}
+CLASS],
+            [PhpClass::create('Foo')->addUseStatement("Foo\Bar", "Bar"), <<<CLASS
+use Foo\Bar;
+
+class Foo
+{
+}
+CLASS],
+            [PhpClass::create('Foo')->addUseStatement("Foo\Bar", "Baz"), <<<CLASS
+use Foo\Bar as Baz;
+
+class Foo
+{
+}
+CLASS],
+            [PhpClass::create('Foo')->addRequiredFile("foo.inc.php"), <<<CLASS
+require_once 'foo.inc.php';
+
+class Foo
+{
+}
+CLASS],
+            [PhpClass::create('Foo')->addRequiredFile(new RelativePath("bar.inc.php")), <<<CLASS
+require_once __DIR__ . '/bar.inc.php';
+
+class Foo
+{
+}
+CLASS],
+        ];
     }
 }

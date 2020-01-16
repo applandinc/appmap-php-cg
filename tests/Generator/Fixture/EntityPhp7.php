@@ -2,10 +2,11 @@
 
 namespace CG\Tests\Generator\Fixture;
 
-use \DateTime;
-
-use CG\Tests\Generator\Fixture\SubFixture\Foo;
 use CG\Tests\Generator\Fixture\SubFixture as Sub;
+use CG\Tests\Generator\Fixture\SubFixture\Baz;
+use CG\Tests\Generator\Fixture\SubFixture\Foo;
+use DateTime;
+use DateTimeZone;
 
 /**
  * Doc Comment.
@@ -17,7 +18,7 @@ class EntityPhp7
     /**
      * @var integer
      */
-    private $id = 0;
+    private int $id = 0;
 
     /**
      * @return int
@@ -39,33 +40,44 @@ class EntityPhp7
 
     public function getTime(): DateTime
     {
+        return null;
     }
 
-    public function getTimeZone(): \DateTimeZone
+    public function getTimeZone(): DateTimeZone
+    {
+        return null;
+    }
+
+    public function setTime(DateTime $time): void
     {
     }
 
-    public function setTime(DateTime $time)
-    {
-    }
-
-    public function setTimeZone(\DateTimeZone $timezone)
+    public function setTimeZone(DateTimeZone $timezone)
     {
     }
 
     public function setArray(array &$array = null): array
     {
+        return null;
     }
 
-    public function getFoo(): Foo
+    public function setArrayWithDefault(array $array = []): array
     {
+        return null;
+    }
+
+    public function getFoo(): ?Foo
+    {
+        return null;
     }
 
     public function getBar(): Sub\Bar
     {
+        return null;
     }
 
-    public function getBaz(): \CG\Tests\Generator\Fixture\SubFixture\Baz
+    public function getBaz(): Baz
     {
+        return null;
     }
 }

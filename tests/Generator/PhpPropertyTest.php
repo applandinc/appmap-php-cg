@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 class PhpPropertyTest extends TestCase
 {
-    public function testSetGetDefaultValue()
+    public function testSetGetDefaultValue(): void
     {
         $prop = new PhpProperty();
 

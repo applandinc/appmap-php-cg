@@ -29,11 +29,12 @@ class PhpMethod extends AbstractPhpMember
 {
     private $final = false;
     private $abstract = false;
-    private $parameters = array();
+    private $parameters = [];
     private $referenceReturned = false;
     private $returnType = null;
     private $returnTypeBuiltin = false;
     private $body = '';
+    private bool $nullAllowedForReturnType = false;
 
     /**
      * @param string|null $name
@@ -57,7 +58,7 @@ class PhpMethod extends AbstractPhpMember
 
         if (method_exists($ref, 'getReturnType')) {
             if ($type = $ref->getReturnType()) {
-                $method->setReturnType((string)$type);
+                $method->setReturnType((string)$type, $type->allowsNull());
             }
         }
 
@@ -135,10 +136,11 @@ class PhpMethod extends AbstractPhpMember
         return $this;
     }
 
-    public function setReturnType($type)
+    public function setReturnType(string $type, $nullAllowed = false)
     {
         $this->returnType = $type;
         $this->returnTypeBuiltin = BuiltinType::isBuiltin($type);
+        $this->nullAllowedForReturnType = $nullAllowed;
         return $this;
     }
 
@@ -230,5 +232,10 @@ class PhpMethod extends AbstractPhpMember
     public function hasBuiltInReturnType()
     {
         return $this->returnTypeBuiltin;
+    }
+
+    public function isNullAllowedForReturnType(): bool
+    {
+        return $this->nullAllowedForReturnType;
     }
 }

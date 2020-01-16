@@ -22,7 +22,7 @@ class RegexInterceptionLoader implements InterceptorLoaderInterface
 {
     private $interceptors;
 
-    public function __construct(array $interceptors = array())
+    public function __construct(array $interceptors = [])
     {
         $this->interceptors = $interceptors;
     }
@@ -31,7 +31,7 @@ class RegexInterceptionLoader implements InterceptorLoaderInterface
     {
         $signature = $method->class.'::'.$method->name;
 
-        $matchingInterceptors = array();
+        $matchingInterceptors = [];
         foreach ($this->interceptors as $pattern => $interceptor) {
             if (preg_match('#'.$pattern.'#', $signature)) {
                 $matchingInterceptors[] = $this->initializeInterceptor($interceptor);

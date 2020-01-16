@@ -8,7 +8,7 @@ namespace CG\Tests\Proxy\Fixture;
  */
 class SimpleClass__CG__Sluggable extends \CG\Tests\Proxy\Fixture\SimpleClass implements \CG\Tests\Proxy\Fixture\SluggableInterface
 {
-    public function getSlug()
+    public function getSlug(): string
     {
     }
 }

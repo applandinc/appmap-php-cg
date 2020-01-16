@@ -6,11 +6,11 @@ class GenerationTestClass
     public $a;
     public $b;
 
-    public function a()
+    public static function b()
     {
     }
 
-    public function b()
+    public function a()
     {
     }
 }

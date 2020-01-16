@@ -2,12 +2,14 @@
 
 namespace CG\Tests\Generator;
 
+use CG\Generator\AbstractPhpMember;
 use InvalidArgumentException;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class AbstractPhpMemberTest extends TestCase
 {
-    public function testSetGetStatic()
+    public function testSetGetStatic(): void
     {
         $member = $this->getMember();
 
@@ -18,7 +20,7 @@ class AbstractPhpMemberTest extends TestCase
         $this->assertFalse($member->isStatic());
     }
 
-    public function testSetGetVisibility()
+    public function testSetGetVisibility(): void
     {
         $member = $this->getMember();
 
@@ -27,14 +29,14 @@ class AbstractPhpMemberTest extends TestCase
         $this->assertEquals('private', $member->getVisibility());
     }
 
-    public function testSetVisibilityThrowsExOnInvalidValue()
+    public function testSetVisibilityThrowsExOnInvalidValue(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $member = $this->getMember();
         $member->setVisibility('foo');
     }
 
-    public function testSetGetName()
+    public function testSetGetName(): void
     {
         $member = $this->getMember();
 
@@ -43,7 +45,7 @@ class AbstractPhpMemberTest extends TestCase
         $this->assertEquals('foo', $member->getName());
     }
 
-    public function testSetGetDocblock()
+    public function testSetGetDocblock(): void
     {
         $member = $this->getMember();
 
@@ -52,8 +54,11 @@ class AbstractPhpMemberTest extends TestCase
         $this->assertEquals('foo', $member->getDocblock());
     }
 
-    private function getMember()
+    /**
+     * @return AbstractPhpMember|MockObject
+     */
+    private function getMember(): MockObject
     {
-        return $this->getMockForAbstractClass('CG\Generator\AbstractPhpMember');
+        return $this->getMockForAbstractClass(AbstractPhpMember::class);
     }
 }

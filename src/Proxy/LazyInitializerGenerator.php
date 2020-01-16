@@ -83,7 +83,7 @@ class LazyInitializerGenerator implements GeneratorInterface
         if (null !== $this->markerInterface) {
             $class->setImplementedInterfaces(array_merge(
                 $class->getImplementedInterfaces(),
-                array($this->markerInterface)
+                [$this->markerInterface]
             ));
         }
 

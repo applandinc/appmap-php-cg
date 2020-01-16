@@ -30,5 +30,5 @@ interface ClassGeneratorInterface
      *
      * @return string
      */
-    public function generateClass();
+    public function generateClass(): string;
 }

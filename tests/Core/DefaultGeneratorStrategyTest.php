@@ -3,23 +3,25 @@
 namespace CG\Tests\Core;
 
 use CG\Core\DefaultGeneratorStrategy;
-use CG\Generator\PhpProperty;
-use CG\Generator\PhpMethod;
+use CG\Generator\AbstractPhpMember;
+use CG\Generator\DefaultNavigator;
 use CG\Generator\PhpClass;
+use CG\Generator\PhpMethod;
+use CG\Generator\PhpProperty;
 use PHPUnit\Framework\TestCase;
 
 class DefaultGeneratorStrategyTest extends TestCase
 {
-    public function testGenerate()
+    public function testGenerate(): void
     {
         $strategy = new DefaultGeneratorStrategy();
-        $strategy->setConstantSortFunc(function($a, $b) {
+        $strategy->setConstantSortFunc(function ($a, $b) {
             return strcasecmp($a, $b);
         });
-        $strategy->setMethodSortFunc($func = function($a, $b) {
+        $strategy->setPropertySortFunc(function (AbstractPhpMember $a, AbstractPhpMember $b) {
             return strcasecmp($a->getName(), $b->getName());
         });
-        $strategy->setPropertySortFunc($func);
+        $strategy->setMethodSortFunc(fn($a, $b) => DefaultNavigator::defaultMethodSortFunc($a, $b));
 
         $this->assertEquals(
             $this->getContent('GenerationTestClass_A.php'),
@@ -27,16 +29,15 @@ class DefaultGeneratorStrategyTest extends TestCase
         );
     }
 
-    public function testGenerateChangedConstantOrder()
+    public function testGenerateChangedConstantOrder(): void
     {
         $strategy = new DefaultGeneratorStrategy();
-        $strategy->setConstantSortFunc(function($a, $b) {
-            return -1 * strcasecmp($a, $b);
+        $strategy->setConstantSortFunc(function ($a, $b) {
+            return strcasecmp($b, $a);
         });
-        $strategy->setMethodSortFunc($func = function($a, $b) {
+        $strategy->setPropertySortFunc(function (AbstractPhpMember $a, AbstractPhpMember $b) {
             return strcasecmp($a->getName(), $b->getName());
         });
-        $strategy->setPropertySortFunc($func);
 
         $this->assertEquals(
             $this->getContent('GenerationTestClass_B.php'),
@@ -46,27 +47,25 @@ class DefaultGeneratorStrategyTest extends TestCase
 
     /**
      * @param string $file
+     * @return null|string
      */
-    private function getContent($file)
+    private function getContent($file): ?string
     {
-        return file_get_contents(__DIR__.'/generated/'.$file);
+        return file_get_contents(__DIR__ . '/generated/' . $file) ?: null;
     }
 
     /**
      * @return PhpClass
      */
-    private function getClass()
+    private function getClass(): PhpClass
     {
-        $class = PhpClass::create()
+        return PhpClass::create()
             ->setName('GenerationTestClass')
             ->setMethod(PhpMethod::create('a'))
-            ->setMethod(PhpMethod::create('b'))
+            ->setMethod(PhpMethod::create('b')->setStatic(true))
             ->setProperty(PhpProperty::create('a'))
             ->setProperty(PhpProperty::create('b'))
             ->setConstant('a', 'foo')
-            ->setConstant('b', 'bar')
-        ;
-
-        return $class;
+            ->setConstant('b', 'bar');
     }
 }

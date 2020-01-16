@@ -27,10 +27,16 @@ class DefaultVisitor implements DefaultVisitorInterface
 {
     protected $writer;
     private $isInterface;
+    private bool $useQuestionMark;
 
-    public function __construct()
+    public function __construct(bool $useQuestionMark = null)
     {
         $this->writer = new Writer();
+        if ($useQuestionMark !== null) {
+            $this->useQuestionMark = $useQuestionMark;
+        } else {
+            $this->useQuestionMark = version_compare(phpversion(), '7.1', '>');
+        }
     }
 
     public function reset()
@@ -189,6 +195,9 @@ class DefaultVisitor implements DefaultVisitorInterface
         if ($method->hasReturnType()) {
             $type = $method->getReturnType();
             $this->writer->write(': ');
+            if ($this->useQuestionMark && $method->isNullAllowedForReturnType()) {
+                $this->writer->write('?');
+            }
             if (!$method->hasBuiltInReturnType() && '\\' !== $type[0]) {
                 $this->writer->write('\\');
             }
@@ -291,7 +300,7 @@ class DefaultVisitor implements DefaultVisitorInterface
                 $defaultValue = $parameter->getDefaultValue();
 
                 if (is_array($defaultValue) && empty($defaultValue)) {
-                    $this->writer->write('array()');
+                    $this->writer->write('[]');
                 } else {
                     $this->writer->write(var_export($defaultValue, true));
                 }

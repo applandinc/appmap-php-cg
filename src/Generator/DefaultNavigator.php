@@ -18,6 +18,8 @@
 
 namespace CG\Generator;
 
+use Closure;
+
 /**
  * The default navigator.
  *
@@ -31,16 +33,16 @@ namespace CG\Generator;
  */
 class DefaultNavigator
 {
-    private $constantSortFunc;
-    private $propertySortFunc;
-    private $methodSortFunc;
+    private ?Closure $constantSortFunc = null;
+    private ?Closure $propertySortFunc = null;
+    private ?Closure $methodSortFunc = null;
 
     /**
      * Sets a custom constant sorting function.
      *
-     * @param null|\Closure $func
+     * @param null|Closure $func
      */
-    public function setConstantSortFunc(\Closure $func = null)
+    public function setConstantSortFunc(Closure $func = null): void
     {
         $this->constantSortFunc = $func;
     }
@@ -48,9 +50,9 @@ class DefaultNavigator
     /**
      * Sets a custom property sorting function.
      *
-     * @param null|\Closure $func
+     * @param null|Closure $func
      */
-    public function setPropertySortFunc(\Closure $func = null)
+    public function setPropertySortFunc(Closure $func = null): void
     {
         $this->propertySortFunc = $func;
     }
@@ -58,14 +60,14 @@ class DefaultNavigator
     /**
      * Sets a custom method sorting function.
      *
-     * @param null|\Closure $func
+     * @param null|Closure $func
      */
-    public function setMethodSortFunc(\Closure $func = null)
+    public function setMethodSortFunc(Closure $func = null): void
     {
         $this->methodSortFunc = $func;
     }
 
-    public function accept(DefaultVisitorInterface $visitor, PhpClass $class)
+    public function accept(DefaultVisitorInterface $visitor, PhpClass $class): void
     {
         $visitor->startVisitingClass($class);
 
@@ -105,68 +107,47 @@ class DefaultNavigator
         $visitor->endVisitingClass($class);
     }
 
-    private function getConstantSortFunc()
+    private function getConstantSortFunc(): callable
     {
         return $this->constantSortFunc ?: 'strcasecmp';
     }
 
-    private function getMethodSortFunc()
+    private function getMethodSortFunc(): callable
     {
         if (null !== $this->methodSortFunc) {
             return $this->methodSortFunc;
         }
 
-        static $defaultSortFunc;
-        if (empty($defaultSortFunc)) {
-            $defaultSortFunc = function($a, $b) {
-                if ($a->isStatic() !== $isStatic = $b->isStatic()) {
-                    return $isStatic ? 1 : -1;
-                }
-
-                if (($aV = $a->getVisibility()) !== $bV = $b->getVisibility()) {
-                    $aV = 'public' === $aV ? 3 : ('protected' === $aV ? 2 : 1);
-                    $bV = 'public' === $bV ? 3 : ('protected' === $bV ? 2 : 1);
-
-                    return $aV > $bV ? -1 : 1;
-                }
-
-                $rs = strcasecmp($a->getName(), $b->getName());
-                if (0 === $rs) {
-                    return 0;
-                }
-
-                return $rs > 0 ? -1 : 1;
-            };
-        }
-
-        return $defaultSortFunc;
+        return [DefaultNavigator::class, 'defaultMethodSortFunc'];
     }
 
-    private function getPropertySortFunc()
+    public static function defaultMethodSortFunc(AbstractPhpMember $a, AbstractPhpMember $b): int
+    {
+        if ($a->isStatic() !== $isStatic = $b->isStatic()) {
+            return $isStatic ? 1 : -1;
+        }
+
+        return self::defaultPropertySortFunc($a, $b);
+    }
+
+    private function getPropertySortFunc(): callable
     {
         if (null !== $this->propertySortFunc) {
             return $this->propertySortFunc;
         }
 
-        static $defaultSortFunc;
-        if (empty($defaultSortFunc)) {
-            $defaultSortFunc = function($a, $b) {
-                if (($aV = $a->getVisibility()) !== $bV = $b->getVisibility()) {
-                    $aV = 'public' === $aV ? 3 : ('protected' === $aV ? 2 : 1);
-                    $bV = 'public' === $bV ? 3 : ('protected' === $bV ? 2 : 1);
+        return [DefaultNavigator::class, 'defaultPropertySortFunc'];
+    }
 
-                    return $aV > $bV ? -1 : 1;
-                }
+    public static function defaultPropertySortFunc(AbstractPhpMember $a, AbstractPhpMember $b): int
+    {
+        if (($aV = $a->getVisibility()) !== $bV = $b->getVisibility()) {
+            $aV = 'public' === $aV ? 3 : ('protected' === $aV ? 2 : 1);
+            $bV = 'public' === $bV ? 3 : ('protected' === $bV ? 2 : 1);
 
-                $rs = strcasecmp($a->getName(), $b->getName());
-                if (0 === $rs) {
-                    return 0;
-                }
-
-                return $rs > 0 ? -1 : 1;
-            };
+            return $aV > $bV ? -1 : 1;
         }
 
-        return $defaultSortFunc;
+        return strcasecmp($b->getName(), $a->getName());
     }
 }

@@ -16,7 +16,7 @@ class EntityPhp7
     {
     }
 
-    public function setTime(\DateTime $time)
+    public function setTime(\DateTime $time): void
     {
     }
 
@@ -25,6 +25,10 @@ class EntityPhp7
      * @return EntityPhp7
      */
     public function setId(int $id = NULL): self
+    {
+    }
+
+    public function setArrayWithDefault(array $array = []): array
     {
     }
 
@@ -47,7 +51,7 @@ class EntityPhp7
     {
     }
 
-    public function getFoo(): \CG\Tests\Generator\Fixture\SubFixture\Foo
+    public function getFoo(): ?\CG\Tests\Generator\Fixture\SubFixture\Foo
     {
     }
 

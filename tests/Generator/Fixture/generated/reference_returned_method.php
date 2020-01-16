@@ -1,4 +1,2 @@
-public function & foo()
-{
-}
+abstract public function & foo();
 

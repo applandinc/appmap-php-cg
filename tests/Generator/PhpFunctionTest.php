@@ -2,13 +2,13 @@
 
 namespace CG\Tests\Generator;
 
-use CG\Generator\PhpParameter;
 use CG\Generator\PhpFunction;
+use CG\Generator\PhpParameter;
 use PHPUnit\Framework\TestCase;
 
 class PhpFunctionTest extends TestCase
 {
-    public function testSetGetName()
+    public function testSetGetName(): void
     {
         $func = new PhpFunction();
 
@@ -20,7 +20,7 @@ class PhpFunctionTest extends TestCase
         $this->assertEquals('foo', $func->getName());
     }
 
-    public function testSetGetQualifiedName()
+    public function testSetGetQualifiedName(): void
     {
         $func = new PhpFunction();
 
@@ -35,7 +35,7 @@ class PhpFunctionTest extends TestCase
         $this->assertEquals('foo', $func->getQualifiedName());
     }
 
-    public function testSetGetNamespace()
+    public function testSetGetNamespace(): void
     {
         $func = new PhpFunction();
 
@@ -44,7 +44,7 @@ class PhpFunctionTest extends TestCase
         $this->assertEquals('foo', $func->getNamespace());
     }
 
-    public function testSetGetBody()
+    public function testSetGetBody(): void
     {
         $func = new PhpFunction();
 
@@ -53,22 +53,22 @@ class PhpFunctionTest extends TestCase
         $this->assertEquals('foo', $func->getBody());
     }
 
-    public function testSetGetParameters()
+    public function testSetGetParameters(): void
     {
         $func = new PhpFunction();
 
-        $this->assertEquals(array(), $func->getParameters());
-        $this->assertSame($func, $func->setParameters(array($param = new PhpParameter())));
-        $this->assertSame(array($param), $func->getParameters());
+        $this->assertEquals([], $func->getParameters());
+        $this->assertSame($func, $func->setParameters([$param = new PhpParameter()]));
+        $this->assertSame([$param], $func->getParameters());
         $this->assertSame($func, $func->addParameter($param2 = new PhpParameter()));
-        $this->assertSame(array($param, $param2), $func->getParameters());
+        $this->assertSame([$param, $param2], $func->getParameters());
         $this->assertSame($func, $func->replaceParameter(1, $param3 = new PhpParameter()));
-        $this->assertSame(array($param, $param3), $func->getParameters());
+        $this->assertSame([$param, $param3], $func->getParameters());
         $this->assertSame($func, $func->removeParameter(0));
-        $this->assertSame(array($param3), $func->getParameters());
+        $this->assertSame([$param3], $func->getParameters());
     }
 
-    public function testSetGetDocblock()
+    public function testSetGetDocblock(): void
     {
         $func = new PhpFunction();
 
@@ -77,7 +77,7 @@ class PhpFunctionTest extends TestCase
         $this->assertEquals('foo', $func->getDocblock());
     }
 
-    public function testSetIsReferenceReturned()
+    public function testSetIsReferenceReturned(): void
     {
         $func = new PhpFunction();
 

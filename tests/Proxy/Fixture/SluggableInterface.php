@@ -4,5 +4,5 @@ namespace CG\Tests\Proxy\Fixture;
 
 interface SluggableInterface
 {
-    public function getSlug();
+    public function getSlug(): string;
 }
