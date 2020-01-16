@@ -9,8 +9,9 @@ use CG\Generator\PhpParameter;
 use CG\Generator\PhpClass;
 use CG\Generator\Writer;
 use CG\Generator\PhpFunction;
+use PHPUnit\Framework\TestCase;
 
-class DefaultVisitorTest extends \PHPUnit_Framework_TestCase
+class DefaultVisitorTest extends TestCase
 {
     public function testVisitFunction()
     {

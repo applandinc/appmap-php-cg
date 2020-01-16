@@ -3,8 +3,9 @@
 namespace CG\Tests\Core;
 
 use CG\Core\ClassUtils;
+use PHPUnit\Framework\TestCase;
 
-class ClassUtilsTest extends \PHPUnit_Framework_TestCase
+class ClassUtilsTest extends TestCase
 {
     public function testGetUserClassName()
     {

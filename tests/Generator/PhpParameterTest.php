@@ -3,8 +3,9 @@
 namespace CG\Tests\Generator;
 
 use CG\Generator\PhpParameter;
+use PHPUnit\Framework\TestCase;
 
-class PhpParameterTest extends \PHPUnit_Framework_TestCase
+class PhpParameterTest extends TestCase
 {
     public function testSetGetName()
     {

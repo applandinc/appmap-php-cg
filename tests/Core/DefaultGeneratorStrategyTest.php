@@ -6,8 +6,9 @@ use CG\Core\DefaultGeneratorStrategy;
 use CG\Generator\PhpProperty;
 use CG\Generator\PhpMethod;
 use CG\Generator\PhpClass;
+use PHPUnit\Framework\TestCase;
 
-class DefaultGeneratorStrategyTest extends \PHPUnit_Framework_TestCase
+class DefaultGeneratorStrategyTest extends TestCase
 {
     public function testGenerate()
     {

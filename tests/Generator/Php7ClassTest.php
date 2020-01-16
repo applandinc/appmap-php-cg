@@ -6,8 +6,9 @@ use CG\Generator\PhpProperty;
 use CG\Generator\PhpParameter;
 use CG\Generator\PhpMethod;
 use CG\Generator\PhpClass;
+use PHPUnit\Framework\TestCase;
 
-class Php7ClassTest extends \PHPUnit_Framework_TestCase
+class Php7ClassTest extends TestCase
 {
     public function testFromReflection()
     {

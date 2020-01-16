@@ -3,8 +3,9 @@
 namespace CG\Tests\Generator;
 
 use CG\Generator\PhpProperty;
+use PHPUnit\Framework\TestCase;
 
-class PhpPropertyTest extends \PHPUnit_Framework_TestCase
+class PhpPropertyTest extends TestCase
 {
     public function testSetGetDefaultValue()
     {

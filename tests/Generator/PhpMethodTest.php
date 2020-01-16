@@ -4,8 +4,9 @@ namespace CG\Tests\Generator;
 
 use CG\Generator\PhpParameter;
 use CG\Generator\PhpMethod;
+use PHPUnit\Framework\TestCase;
 
-class PhpMethodTest extends \PHPUnit_Framework_TestCase
+class PhpMethodTest extends TestCase
 {
     public function testSetIsFinal()
     {

@@ -6,8 +6,10 @@ use CG\Generator\PhpProperty;
 use CG\Generator\PhpParameter;
 use CG\Generator\PhpMethod;
 use CG\Generator\PhpClass;
+use InvalidArgumentException;
+use PHPUnit\Framework\TestCase;
 
-class PhpClassTest extends \PHPUnit_Framework_TestCase
+class PhpClassTest extends TestCase
 {
     public function testFromReflection()
     {
@@ -98,11 +100,9 @@ class PhpClassTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array('bar' => 'baz'), $class->getConstants());
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testRemoveConstantThrowsExceptionWhenConstantDoesNotExist()
     {
+        $this->expectException(InvalidArgumentException::class);
         $class = new PhpClass();
         $class->removeConstant('foo');
     }

@@ -4,8 +4,9 @@ namespace CG\Tests\Core;
 
 use CG\Generator\Writer;
 use CG\Core\ReflectionUtils;
+use PHPUnit\Framework\TestCase;
 
-class ReflectionUtilsTest extends \PHPUnit_Framework_TestCase
+class ReflectionUtilsTest extends TestCase
 {
     public function testGetOverridableMethods()
     {

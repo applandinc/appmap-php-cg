@@ -2,7 +2,10 @@
 
 namespace CG\Tests\Generator;
 
-class AbstractPhpMemberTest extends \PHPUnit_Framework_TestCase
+use InvalidArgumentException;
+use PHPUnit\Framework\TestCase;
+
+class AbstractPhpMemberTest extends TestCase
 {
     public function testSetGetStatic()
     {
@@ -24,11 +27,9 @@ class AbstractPhpMemberTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('private', $member->getVisibility());
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testSetVisibilityThrowsExOnInvalidValue()
     {
+        $this->expectException(InvalidArgumentException::class);
         $member = $this->getMember();
         $member->setVisibility('foo');
     }

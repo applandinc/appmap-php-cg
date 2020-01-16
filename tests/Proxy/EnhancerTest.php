@@ -6,9 +6,11 @@ use CG\Proxy\LazyInitializerInterface;
 use CG\Proxy\InterceptionGenerator;
 use CG\Proxy\LazyInitializerGenerator;
 use CG\Proxy\Enhancer;
+use CG\Tests\Proxy\Fixture\Entity;
 use CG\Tests\Proxy\Fixture\TraceInterceptor;
+use PHPUnit\Framework\TestCase;
 
-class EnhancerTest extends \PHPUnit_Framework_TestCase
+class EnhancerTest extends TestCase
 {
     /**
      * @dataProvider getGenerationTests
@@ -26,7 +28,7 @@ class EnhancerTest extends \PHPUnit_Framework_TestCase
         return array(
             array('CG\Tests\Proxy\Fixture\SimpleClass', 'CG\Tests\Proxy\Fixture\SimpleClass__CG__Enhanced', array('CG\Tests\Proxy\Fixture\MarkerInterface'), array()),
             array('CG\Tests\Proxy\Fixture\SimpleClass', 'CG\Tests\Proxy\Fixture\SimpleClass__CG__Sluggable', array('CG\Tests\Proxy\Fixture\SluggableInterface'), array()),
-            array('CG\Tests\Proxy\Fixture\Entity', 'CG\Tests\Proxy\Fixture\Entity__CG__LazyInitializing', array(), array(
+            array(Entity::class, 'CG\Tests\Proxy\Fixture\Entity__CG__LazyInitializing', array(), array(
                 new LazyInitializerGenerator(),
             ))
         );
@@ -34,7 +36,7 @@ class EnhancerTest extends \PHPUnit_Framework_TestCase
 
     public function testInterceptionGenerator()
     {
-        $enhancer = new Enhancer(new \ReflectionClass('CG\Tests\Proxy\Fixture\Entity'), array(), array(
+        $enhancer = new Enhancer(new \ReflectionClass(Entity::class), array(), array(
             $generator = new InterceptionGenerator()
         ));
         $enhancer->setNamingStrategy($this->getNamingStrategy('CG\Tests\Proxy\Fixture\Entity__CG__Traceable_'.sha1(microtime(true))));
@@ -54,7 +56,7 @@ class EnhancerTest extends \PHPUnit_Framework_TestCase
 
     public function testLazyInitializerGenerator()
     {
-        $enhancer = new Enhancer(new \ReflectionClass('CG\Tests\Proxy\Fixture\Entity'), array(), array(
+        $enhancer = new Enhancer(new \ReflectionClass(Entity::class), array(), array(
             $generator = new LazyInitializerGenerator(),
         ));
         $generator->setPrefix('');
@@ -67,7 +69,7 @@ class EnhancerTest extends \PHPUnit_Framework_TestCase
 
     private function getLoader(array $interceptors)
     {
-        $loader = $this->getMock('CG\Proxy\InterceptorLoaderInterface');
+        $loader = $this->createMock('CG\Proxy\InterceptorLoaderInterface');
         $loader
             ->expects($this->any())
             ->method('loadInterceptors')
@@ -91,7 +93,7 @@ class EnhancerTest extends \PHPUnit_Framework_TestCase
      */
     private function getNamingStrategy($name)
     {
-        $namingStrategy = $this->getMock('CG\Core\NamingStrategyInterface');
+        $namingStrategy = $this->createMock('CG\Core\NamingStrategyInterface');
         $namingStrategy
             ->expects($this->any())
             ->method('getClassName')
