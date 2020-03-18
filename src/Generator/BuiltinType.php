@@ -4,7 +4,7 @@ namespace CG\Generator;
 
 class BuiltinType
 {
-    private static $builtinTypes = ['self', 'array', 'callable', 'bool', 'float', 'int', 'string', 'void'];
+    private static $builtinTypes = ['self', 'array', 'callable', 'bool', 'float', 'int', 'string', 'void', 'iterable', 'object'];
     
     public static function isBuiltin(string $type): bool
     {
