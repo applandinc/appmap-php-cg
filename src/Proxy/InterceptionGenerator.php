@@ -81,6 +81,24 @@ class InterceptionGenerator implements GeneratorInterface
             $genClass->addRequiredFile($this->requiredFile);
         }
 
+        $getOriginalClassMethod = new PhpMethod();
+        $getOriginalClassMethod
+            ->setName($this->prefix.'getOriginalClassFilename')
+            ->setVisibility(PhpMethod::VISIBILITY_PUBLIC)
+            ->setBody('return "'.$originalClass->getFileName().'";');
+        $genClass->setMethod($getOriginalClassMethod);
+
+
+        $mapping = array_map(function(\ReflectionMethod $method) {
+            return "'{$method->getName()}' => {$method->getStartLine()}";
+        }, $methods);
+        $getFunctionsMapping = new PhpMethod();
+        $getFunctionsMapping
+            ->setName($this->prefix.'getFunctionsMapping')
+            ->setVisibility(PhpMethod::VISIBILITY_PUBLIC)
+            ->setBody('return ['.join(', ', $mapping).'];');
+        $genClass->setMethod($getFunctionsMapping);
+
         $interceptorLoader = new PhpProperty();
         $interceptorLoader
             ->setName($this->prefix.'loader')
