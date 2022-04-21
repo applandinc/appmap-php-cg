@@ -283,6 +283,9 @@ class DefaultVisitor implements DefaultVisitorInterface
 
             if ($parameter->hasType()) {
                 $type = $parameter->getType();
+                if ($parameter->hasNullableType()) {
+                    $this->writer->write('?');
+                }
                 if ('\\' !== $type[0] && !$parameter->hasBuiltinType()) {
                     $this->writer->write('\\');
                 }

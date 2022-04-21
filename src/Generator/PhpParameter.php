@@ -35,6 +35,7 @@ class PhpParameter
     private $passedByReference = false;
     private $type;
     private $typeBuiltin;
+    private $typeNullable = false;
 
     /**
      * @param string|null $name
@@ -69,14 +70,14 @@ class PhpParameter
                 } else {
                     $typeName = (string)$type;
                 }
-                $parameter->setType($typeName);
+                $parameter->setType($typeName, $ref->allowsNull());
             }
         } else if ($ref->isArray()) {
-            $parameter->setType('array');
+            $parameter->setType('array', $ref->allowsNull());
         } elseif ($class = $ref->getClass()) {
-            $parameter->setType($class->name);
+            $parameter->setType($class->name, $ref->allowsNull());
         } elseif (method_exists($ref, 'isCallable') && $ref->isCallable()) {
-            $parameter->setType('callable');
+            $parameter->setType('callable', $ref->allowsNull());
         }
 
         return $parameter;
@@ -127,12 +128,14 @@ class PhpParameter
 
     /**
      * @param string $type
+     * @param bool $nullable
      * @return PhpParameter
      */
-    public function setType($type): PhpParameter
+    public function setType($type, $nullable = false): PhpParameter
     {
         $this->type = $type;
         $this->typeBuiltin = BuiltinType::isBuiltIn($type);
+        $this->typeNullable = $nullable;
 
         return $this;
     }
@@ -170,5 +173,10 @@ class PhpParameter
     public function hasBuiltinType()
     {
         return $this->typeBuiltin;
+    }
+
+    public function hasNullableType()
+    {
+        return $this->typeNullable;
     }
 }
