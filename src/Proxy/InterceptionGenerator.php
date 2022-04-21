@@ -131,6 +131,10 @@ class InterceptionGenerator implements GeneratorInterface
             false => 'return $invocation->proceed();'
         ];
 
+        // TODO: use statements need to be added based on the annotations used in the original class
+        $genClass->addUseStatement('Sensio\Bundle\FrameworkExtraBundle\Configuration\Template');
+        $genClass->addUseStatement('Symfony\Component\Routing\Annotation\Route');
+
         foreach ($methods as $method) {
             $params = [];
             foreach ($method->getParameters() as $param) {
@@ -143,7 +147,7 @@ class InterceptionGenerator implements GeneratorInterface
             $isVoid = 'void' === $genMethod->getReturnType();
 
             $genMethod->setBody(sprintf($interceptorCode . $voidReturns[$isVoid], var_export(ClassUtils::getUserClass($method->class), true), var_export($method->name, true), $params, $params))
-                ->setDocblock(null)
+                ->setDocblock($method->getDocComment());
             ;
             $genClass->setMethod($genMethod);
         }
